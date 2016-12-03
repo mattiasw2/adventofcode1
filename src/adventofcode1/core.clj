@@ -1,4 +1,7 @@
 (ns adventofcode1.core
+  (:require
+   adventofcode1.spec-test-instrument-debug
+   )
   (:gen-class))
 
 (defn -main
