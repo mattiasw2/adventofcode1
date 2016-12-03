@@ -16,6 +16,8 @@
 (deftest total-distance-test
   (is (= 5 (total-distance [{:r 2}{:l 3}])))
   (is (= 2 (total-distance [{:r 2}{:r 2}{:r 2}])))
+  (is (= 0 (total-distance [{:r 2}{:r 0}{:r 2}])))
+  (is (= 2 (total-distance [{:r 2}{:r 0}{:r 2}{:r 2}])))
   (is (= 12 (total-distance [{:r 5}{:l 5}{:r 5}{:r 3}])))
   )
 
@@ -29,9 +31,23 @@
 (deftest puzzle-1-test
   (is (= 246 (total-distance adventofcode1.one-test/puzzle-1))))
 
-;; (do (set! *warn-on-reflection* true)
-;;     (set! *unchecked-math* :warn-on-boxed)
-;;     (schema.core/set-fn-validation! true))
+
+(deftest steps-same-position-test
+  (is (= "No easter bunny found" (steps-same-position [{:r 2}{:l 3}])))
+  (is (= "No easter bunny found" (steps-same-position [{:r 2}{:r 2}{:r 2}])))
+  (is (= "No easter bunny found" (steps-same-position [{:r 5}{:l 5}{:r 5}{:r 3}])))
+  ;; bad tests, since zero steps means same position, so abort
+  (is (= 2 (steps-same-position [{:r 2}{:r 0}{:r 2}])))
+  (is (= 2 (steps-same-position [{:r 2}{:r 0}{:r 2}{:r 2}])))
+  ;; more realistic sample
+  (is (= 0 (steps-same-position [{:r 2}{:r 2}{:r 2}{:r 2}])))
+  (is (= 0 (steps-same-position [{:r 2}{:r 2}{:r 2}{:r 2}{:r 5}])))
+  ;; and their sample
+  (is (= 4 (steps-same-position [{:r 8}{:r 4}{:r 4}{:r 8}])))
+  )
+
+(deftest puzzle-1b-test
+  (is (= 251 (steps-same-position adventofcode1.one-test/puzzle-1))))
 
 
 

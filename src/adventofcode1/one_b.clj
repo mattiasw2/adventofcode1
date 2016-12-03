@@ -1,4 +1,4 @@
-(ns adventofcode1.one
+(ns adventofcode1.one-b
   (:require
    [clojure.spec :as s]
    [clojure.spec.gen :as gen]
@@ -6,11 +6,6 @@
 
    [clojure.core.match :refer [match]]
 
-   ;; You can also call (timbre/refer-timbre) to configure Clj ns referrals automatically
-   [taoensso.timbre :as timbre
-    :refer (log  trace  debug  info  warn  error  fatal  report
-                 logf tracef debugf infof warnf errorf fatalf reportf
-                 spy get-env log-env)]
    spyscope.core
    )
   )
@@ -34,6 +29,8 @@
 (s/def ::l (s/and (s/int-in 0 max-coord) integer?  #(< % max-coord)))
 ;; Tip: you cannot use s/or for #(or (pos? %) (zero? %)) , i.e. (s/or :pos pos? :zero zero?) is not the same
 (s/def ::r (s/and (s/int-in 0 max-coord) integer? #(or (pos? %) (zero? %)) #(< % max-coord)))
+;; :c is straight ahead in the current direction
+(s/def ::c (s/int-in 0 max-coord))
 
 ;; path with name-spaced keys
 ;; (s/def ::step (s/or :turn-left (s/keys :req    [::l]) :turn-right (s/keys :req    [::r])))
@@ -42,7 +39,7 @@
 
 ;; path with unqualified keyes
 ;; s/or and s/alt are very different, since s/alt is a sequence
-(s/def ::step-un (s/or :turn-left (s/keys :req-un [::l]) :turn-right (s/keys :req-un [::r])))
+(s/def ::step-un (s/or :continue (s/keys :req-un [::c]) :turn-left (s/keys :req-un [::l]) :turn-right (s/keys :req-un [::r])))
 ;; when a SINGLE arg is a sequence, do not use s/* s/cat or similar, like ::path above
 (s/def ::path-un (s/coll-of ::step-un))
 ;; (gen/generate (s/gen ::path-un))
@@ -130,6 +127,7 @@
   [current direction step]
   (let [[new-direction n]
         (match step
+          {:c n} [direction n]
           {:l n} [(turn-left  direction) n]
           {:r n} [(turn-right direction) n])
         new-current (straight current new-direction n)]
@@ -148,6 +146,8 @@
        (let [[new-current new-direction] (step current direction (first path))]
          (recur new-current new-direction (rest path))))))
 
+;; todo: we should probably have 2 definitions for samples like this, one with s/int-in, and ione without
+;; because, now things like (stest/check `adventofcode1.one/total-distance) will always fail
 (s/fdef total-distance
         :args (s/cat :path ::path-un)
         :ret  integer?
@@ -157,5 +157,37 @@
   "Calculate the nearest way to the final current position"
   [path]
   (distance (steps path)))
+
+
+(defn core-path
+  "Make a core path from a path. In a core path, the steps are always 0 or 1.
+   :c is used for this, for example R3 is replaced by R1 C1 C1.
+   The only time a 0 is generated if input is L0 or R0, since then we would find the bunny directly."
+  ([path](core-path [] (first path)(rest path)))
+  ([sofar hd tl]
+   (match hd
+     nil    sofar
+     {:r 0} (recur (conj sofar hd    ) (first tl)  (rest tl))
+     {:l 0} (recur (conj sofar hd    ) (first tl)  (rest tl))
+     {:c 0} (recur (conj sofar hd    ) (first tl)  (rest tl))
+     {:r 1} (recur (conj sofar {:r 1}) (first tl)  (rest tl))
+     {:l 1} (recur (conj sofar {:l 1}) (first tl)  (rest tl))
+     {:c 1} (recur (conj sofar {:c 1}) (first tl)  (rest tl))
+     {:r n} (recur (conj sofar {:r 1}) {:c (dec n)} tl      )
+     {:l n} (recur (conj sofar {:l 1}) {:c (dec n)} tl      )
+     {:c n} (recur (conj sofar {:c 1}) {:c (dec n)} tl      )
+     )))
+
+
+(defn stop-same-position
+  "Move a number of steps and exit when we STOP at the same cell the second time, or when the path is empty.
+   This wasn't what they wanted."
+  ([path](stop-same-position start north #{start} (core-path path)))
+  ([current direction passed path]
+   (if (empty? path) "No easter bunny found"
+       (let [[new-current new-direction] (step current direction (first path))]
+         (if (passed new-current)
+           (distance new-current)
+           (recur new-current new-direction (conj passed new-current)(rest path)))))))
 
 (clojure.spec.test/instrument)
