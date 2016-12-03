@@ -17,7 +17,7 @@
 
 ;; Assume we are inside a world of -max-coord .. (max-coord-1)
 ;; limited for testing
-(def max-coord 100)
+(def max-coord 1000)
 
 (do
   ;;(set! *warn-on-reflection* true)
@@ -63,10 +63,14 @@
 (s/def ::x-direction (s/int-in -1 2))
 (s/def ::y-direction (s/int-in -1 2))
 
+(defn distance
+  [current-or-direction]
+  (apply + (map #(Math/abs %) (vals current-or-direction))))
+
 (defn no-diagonals?
   "Return true if the direction is N,S,W,E"
   [direction]
-  (= 1 (Math/abs (apply + (vals direction)))))
+  (= 1 (distance direction)))
 
 (s/def ::xy-direction (s/and (s/keys :req-un [::x-direction ::y-direction]) no-diagonals?))
 
@@ -98,7 +102,7 @@
 ;; (clojure.spec.test/check `straight)
 ;; yes! :smallest [({:x 0, :y 90} {:x-direction 0, :y-direction 1} 10)]}},
 (s/fdef straight
-        :args (s/cat :current ::xy :direction ::xy-direction :n (s/int-in 0 11))
+        :args (s/cat :current ::xy :direction ::xy-direction :n (s/int-in 0 max-coord))
         :ret ::xy
         ;; just testing :fn
         ;; {:args {:current {:x 0, :y 1}, :direction {:x-direction 0, :y-direction 1}, :n 1}, :ret {:x 0, :y 2}}
@@ -131,7 +135,6 @@
 
 (s/fdef steps
         :args (s/or :base (s/cat :path ::path-un) :rec (s/cat :current ::xy :direction ::xy-direction :path ::path-un))
-        ;; :args (s/or :base (s/cat :path ::path-un) :rec (s/cat :current ::xy :direction ::xy-direction :path ::path-un))
         :ret  ::xy
         )
 
@@ -142,6 +145,11 @@
    (if (empty? path) current
        (let [[new-current new-direction] (step current direction (first path))]
          (recur new-current new-direction (rest path))))))
+
+(defn total-distance
+  "Calculate the nearest way to the final current position"
+  [path]
+  (distance (steps path)))
 
 
 (clojure.spec.test/instrument)
