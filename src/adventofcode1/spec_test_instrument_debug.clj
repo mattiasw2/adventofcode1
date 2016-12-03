@@ -12,11 +12,13 @@
    [clojure.pprint :as pp]
    [clojure.spec :as s]
    [clojure.spec.gen :as gen]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [clojure.spec.test :as stest]
+   ))
 
 (in-ns 'clojure.spec.test.check)
 (in-ns 'clojure.spec.test)
-(alias 'stc 'clojure.spec.test.check)
+;;(alias 'stc 'clojure.spec.test.check)
 
 (defn- spec-checking-fn
   [v f fn-spec]

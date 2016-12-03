@@ -29,19 +29,22 @@
 (assert clojure.lang.RT/checkSpecAsserts)
 (assert (s/check-asserts?))
 
-;; ?pos cannot generate, integer? is needed for that part.
-;; and (s/int-in 0 11) is even better if we are talking about small numbers
-(s/def ::l (s/and (s/int-in 0 max-coord) integer? pos? #(< % max-coord)))
-(s/def ::r (s/and (s/int-in 0 max-coord) integer? pos? #(< % max-coord)))
+;; Tip: ?pos cannot generate, integer? is needed for that part.
+;; Tip: and (s/int-in 0 11) is even better if we are talking about small numbers
+(s/def ::l (s/and (s/int-in 0 max-coord) integer?  #(< % max-coord)))
+;; Tip: you cannot use s/or for #(or (pos? %) (zero? %)) , i.e. (s/or :pos pos? :zero zero?) is not the same
+(s/def ::r (s/and (s/int-in 0 max-coord) integer? #(or (pos? %) (zero? %)) #(< % max-coord)))
 
 ;; path with name-spaced keys
-(s/def ::step (s/alt :turn-left (s/keys :req    [::l]) :turn-right (s/keys :req    [::r])))
-(s/def ::path (s/* ::step))
+;; (s/def ::step (s/or :turn-left (s/keys :req    [::l]) :turn-right (s/keys :req    [::r])))
+;; (s/def ::path (s/* ::step))
 ;; (gen/generate (s/gen ::path))
 
 ;; path with unqualified keyes
-(s/def ::step-un (s/alt :turn-left (s/keys :req-un [::l]) :turn-right (s/keys :req-un [::r])))
-(s/def ::path-un (s/* ::step-un))
+;; s/or and s/alt are very different, since s/alt is a sequence
+(s/def ::step-un (s/or :turn-left (s/keys :req-un [::l]) :turn-right (s/keys :req-un [::r])))
+;; when a SINGLE arg is a sequence, do not use s/* s/cat or similar, like ::path above
+(s/def ::path-un (s/coll-of ::step-un))
 ;; (gen/generate (s/gen ::path-un))
 
 ;; y 2
@@ -125,5 +128,20 @@
           {:r n} [(turn-right direction) n])
         new-current (straight current new-direction n)]
     [new-current new-direction]))
+
+(s/fdef steps
+        :args (s/or :base (s/cat :path ::path-un) :rec (s/cat :current ::xy :direction ::xy-direction :path ::path-un))
+        ;; :args (s/or :base (s/cat :path ::path-un) :rec (s/cat :current ::xy :direction ::xy-direction :path ::path-un))
+        :ret  ::xy
+        )
+
+(defn steps
+  "Move a number of steps"
+  ([path](steps {:x 0 :y 0} north path))
+  ([current direction path]
+   (if (empty? path) current
+       (let [[new-current new-direction] (step current direction (first path))]
+         (recur new-current new-direction (rest path))))))
+
 
 (clojure.spec.test/instrument)
