@@ -71,6 +71,19 @@
 
 (s/def ::xy-direction (s/and (s/keys :req-un [::x-direction ::y-direction]) no-diagonals?))
 
+;; moved here, since no-diagonals? used in s/def above
+;; this are just for learning specs better
+(s/fdef distance
+        :args (s/alt :current ::xy :direction ::xy-direction)
+        :ret  integer?
+        )
+
+(s/fdef no-diagonals?
+        :args (s/cat :direction ::xy-direction)
+        :ret  boolean?
+        )
+
+
 (def north {:x-direction  0 :y-direction  1})
 (def south {:x-direction  0 :y-direction -1})
 (def east  {:x-direction  1 :y-direction  0})
