@@ -72,7 +72,14 @@
 (defn row
   "Find the value for one row of moves"
   [current moves]
-  (row-2 current (seq moves)))
+  ;; problem found with (stest/check `row) and (stest/check `rows)
+  ;; use vec to turn nil into [], so that row-2 knows it will get a collection
+  (row-2 current (vec (seq moves))))
+
+(s/fdef rows
+        :args (s/or :base (s/cat :list-of-moves (s/coll-of string?))
+                    :rec  (s/cat :answer (s/coll-of ::key) :current ::key :list-of-moves (s/coll-of string?)))
+        :ret (s/coll-of ::key))
 
 (defn rows
   "Start at button 5 and process moves row by row."
