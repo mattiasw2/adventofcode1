@@ -1924,6 +1924,13 @@
    [  725  312  215]
    ])
 
+(deftest transpose-test
+  (is (= (transpose-puzzle-data [[1 2 3][3 4 5][6 7 8]])
+         '([1 3 6] [2 4 7] [3 5 8])))
+  (is (= (transpose-puzzle-data [[1 2 3][3 4 5][6 7 8][1 2 3][3 4 5][6 7 8]])
+         '([1 3 6] [2 4 7] [3 5 8] [1 3 6] [2 4 7] [3 5 8])))
+  )
+
 (deftest puzzle-3a-test
   (is (= 982 (count-valid-triangles-horizontally puzzle-3-data))))
 
