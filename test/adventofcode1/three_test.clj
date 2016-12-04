@@ -16,7 +16,7 @@
   )
 
 (deftest count-valid-triangle-test
-  (is (= 2 (count-valid-triangle [[5 10 25][25 25 25][25 25 49][25 25 50]]))))
+  (is (= 2 (count-valid-triangles-horizontally [[5 10 25][25 25 25][25 25 49][25 25 50]]))))
 
 (def puzzle-3-data
   [
@@ -1925,4 +1925,9 @@
    ])
 
 (deftest puzzle-test
-  (is (= 982 (count-valid-triangle puzzle-3-data))))
+  (is (= 982 (count-valid-triangles-horizontally puzzle-3-data))))
+
+;; (deftest quickcheck-test
+;;   (is (stest/check `valid-triangle?))
+;;   (is (stest/check `count-valid-triangles-horizontally))
+;;   )

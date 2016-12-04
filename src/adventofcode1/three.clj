@@ -12,6 +12,17 @@
    )
   )
 
+;; Prevent issues like
+;; :smallest [([[-6856367198276841078 -2367004838577934731 0]])]}}, :sym adventofcode1.three/count-valid-triangles-horizontally, :failure #error {
+;; :cause "integer overflow"
+;; (s/def ::my-int (s/and integer? #(< (Math/abs %) 4000000000)))
+(s/def ::my-int (s/int-in -4000000000 4000000000))
+;; (s/def ::my-int integer?)
+
+(s/fdef valid-triangle?
+        ;; do not add ":kind vector?" since extremely slow then
+        :args (s/cat :abc (s/coll-of ::my-int :count 3))
+        :ret  boolean?)
 
 (defn valid-triangle?
   "Return true if these three side length is a triangle"
@@ -21,7 +32,12 @@
        (> (+ b c) a)))
 
 
-(defn count-valid-triangles
+(s/fdef count-valid-triangles-horizontally
+        :args (s/cat :abc-list (s/coll-of (s/coll-of ::my-int :count 3)))
+        :ret  integer?)
+
+
+(defn count-valid-triangles-horizontally
   [triangles]
   (reduce + (map #(if (valid-triangle? %) 1 0) triangles)))
 
