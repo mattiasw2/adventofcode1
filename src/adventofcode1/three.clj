@@ -41,6 +41,15 @@
   [triangles]
   (reduce + (map #(if (valid-triangle? %) 1 0) triangles)))
 
+(s/fdef transpose-puzzle-data
+        ;; I would like to add the length should be divisble by 3, since otherwise I get
+        ;; (stest/check `transpose-puzzle-data)
+        ;; =>
+        ;;  :cause "No matching clause: [[0 0 0]]"
+        :args (s/or :base (s/cat :triangles (s/coll-of (s/coll-of ::my-int :count 3)))
+                    :rec  (s/cat :acc (s/coll-of (s/coll-of ::my-int :count 3)) :triangles (s/coll-of (s/coll-of ::my-int :count 3))))
+        :ret  (s/coll-of (s/coll-of ::my-int :count 3)))
+
 (defn transpose-puzzle-data
   ([triangles](transpose-puzzle-data [] triangles))
   ([acc triangles]
