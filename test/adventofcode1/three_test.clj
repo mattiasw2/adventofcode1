@@ -1924,8 +1924,11 @@
    [  725  312  215]
    ])
 
-(deftest puzzle-test
+(deftest puzzle-3a-test
   (is (= 982 (count-valid-triangles-horizontally puzzle-3-data))))
+
+(deftest puzzle-3b-test
+  (is (= 1826 (count-valid-triangles-vertically puzzle-3-data))))
 
 ;; (deftest quickcheck-test
 ;;   (is (stest/check `valid-triangle?))
