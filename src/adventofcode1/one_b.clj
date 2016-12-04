@@ -1,4 +1,5 @@
 (ns adventofcode1.one-b
+  "http://adventofcode.com/2016/day/1"
   (:require
    [clojure.spec :as s]
    [clojure.spec.gen :as gen]
