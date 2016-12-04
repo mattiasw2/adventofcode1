@@ -28,7 +28,7 @@
 (s/def ::parsed-room-name (s/keys :req-un [::name ::checksum ::sectorid]))
 
 (s/fdef parse-room-name
-        :args ::name
+        :args (s/cat :name ::name)
         :ret  ::parsed-room-name)
 
 (defn parse-room-name
@@ -42,6 +42,13 @@
      :sectorid (bigint sectorid)
      :checksum checksum}))
 
+(defn build-result
+  "Checksum is the five most common letters in the encrypted name, in order, with ties broken by alphabetization."
+  [acc distinct-keys checksum]
+  (if (empty? distinct-keys) acc
+      (let [res (filter (fn [[cnt char]] (= cnt (first distinct-keys))) checksum)]
+        (recur (concat acc res) (rest distinct-keys) checksum))))
+
 (s/fdef checksum
         :args (s/cat :name ::name)
         :ret  ::checksum)
@@ -49,8 +56,32 @@
 (defn checksum
   [name]
   (let [freq (dissoc (frequencies (seq name)) \-)
-        checksum (take 5 (reverse (sort (map (fn [[char cnt]] [cnt char]) freq))))]
-    (clojure.string/join (map second checksum))))
+        checksum (sort (map (fn [[char cnt]] [cnt char]) freq))
+        ;; [] is just an accumulator to make function tail-recursive
+        ;; (distinct (map first checksum)) is the letters in occurrency order
+        ;; (reverse checksum) is the order we are going to show them if tie
+        res (build-result [] (reverse (distinct (map first checksum))) checksum)]
+    (clojure.string/join (map second (take 5 res)))))
+
+
+(defn valid-room-name
+  "Check if room name is valid.
+   If valid, return sectorid, else 0"
+  [name]
+  (let [room (parse-room-name name)
+        checksum (checksum (:name room))]
+    (if (= checksum (:checksum room))
+      (:sectorid room)
+      0)))
+
+(defn sum-sectorid-of-valid-room-names
+  [names]
+  (reduce + (map valid-room-name names)))
+
+(defn valid-room-name?
+  "Return true if room is valid."
+  [name]
+  (> (valid-room-name name) 0))
 
 
 (clojure.spec.test/instrument)
