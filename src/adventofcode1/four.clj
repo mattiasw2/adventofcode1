@@ -45,12 +45,12 @@
 
 (defn build-result
   "Checksum is the five most common letters in the encrypted name, in order, with ties broken by alphabetization."
-  [acc distinct-keys checksum]
-  (if (empty? distinct-keys)
+  [acc distinct-cnts-desc checksum]
+  (if (empty? distinct-cnts-desc)
     ;; we cannot guarantee there will not be more than 5 chars, just keep the first ones
     (take 5 acc)
-    (let [res (filter (fn [[cnt char]] (= cnt (first distinct-keys))) checksum)]
-      (recur (concat acc res) (rest distinct-keys) checksum))))
+    (let [res (filter (fn [[cnt char]] (= cnt (first distinct-cnts-desc))) checksum)]
+      (recur (concat acc res) (rest distinct-cnts-desc) checksum))))
 
 (s/fdef checksum
         :args (s/cat :name ::name)
