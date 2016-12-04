@@ -22,6 +22,7 @@
   [name]
   (rest (re-find (re-matcher #"([-a-z]+)(\d+)\[(.+)\]" name))))
 
+;; Improve: using ::name both for "aaaaa-bbb-z-y-x-123[abxyz]" and "aaaaa-bbb-z-y-x-"
 (s/def ::name string?)
 (s/def ::checksum string?)
 (s/def ::sectorid integer?)
@@ -45,9 +46,11 @@
 (defn build-result
   "Checksum is the five most common letters in the encrypted name, in order, with ties broken by alphabetization."
   [acc distinct-keys checksum]
-  (if (empty? distinct-keys) acc
-      (let [res (filter (fn [[cnt char]] (= cnt (first distinct-keys))) checksum)]
-        (recur (concat acc res) (rest distinct-keys) checksum))))
+  (if (empty? distinct-keys)
+    ;; we cannot guarantee there will not be more than 5 chars, just keep the first ones
+    (take 5 acc)
+    (let [res (filter (fn [[cnt char]] (= cnt (first distinct-keys))) checksum)]
+      (recur (concat acc res) (rest distinct-keys) checksum))))
 
 (s/fdef checksum
         :args (s/cat :name ::name)
@@ -61,7 +64,7 @@
         ;; (distinct (map first checksum)) is the letters in occurrency order
         ;; (reverse checksum) is the order we are going to show them if tie
         res (build-result [] (reverse (distinct (map first checksum))) checksum)]
-    (clojure.string/join (map second (take 5 res)))))
+    (clojure.string/join (map second res))))
 
 
 (defn valid-room-name
