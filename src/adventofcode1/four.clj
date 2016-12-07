@@ -77,14 +77,45 @@
       (:sectorid room)
       0)))
 
-(defn sum-sectorid-of-valid-room-names
-  [names]
-  (reduce + (map valid-room-name names)))
-
 (defn valid-room-name?
   "Return true if room is valid."
   [name]
   (> (valid-room-name name) 0))
+
+
+(defn sum-sectorid-of-valid-room-names
+  [names]
+  (reduce + (map valid-room-name names)))
+
+(s/fdef rotate-char
+        :args (s/cat :text char? :n integer?)
+        :ret  char?)
+
+(defn rotate-char
+  "Rotate the lower-case char n positions,"
+  [ch n]
+  (let [res (+ (int ch) n)]
+    (char (if (> res 122) (+ 97 (mod (- res 97) 26)) res))))
+
+(s/fdef rotate-string
+        :args (s/cat :text string? :n integer?)
+        :ret  string?)
+
+(defn rotate-string
+  "Rotate each char in lower-case string n positions."
+  [text n]
+  (clojure.string/join (map #(rotate-char % n) (or (seq text) []))))
+
+(defn find-northpole
+  [names]
+  (if (empty? names) nil
+    (let [room (parse-room-name (first names))
+          rotated (rotate-string (:name room) (:sectorid room))]
+      (if (clojure.string/starts-with? rotated "north")
+        [(:sectorid room) rotated]
+        (recur (rest names))))))
+
+
 
 
 (clojure.spec.test/instrument)

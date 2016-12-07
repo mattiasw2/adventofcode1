@@ -1134,3 +1134,12 @@
 (deftest sum-sectorid-of-valid-room-names-test
   (is (= 409147 (sum-sectorid-of-valid-room-names puzzle-4-data)))
   )
+
+;; For example, the real name for qzmt-zixmtkozy-ivhz-343 is very encrypted name.
+(deftest rotate-string-test
+  (is (= "veryencryptedname" (rotate-string "qzmtzixmtkoziyvhz" 343)))
+  )
+
+(deftest find-northpole-test
+  (is (= [991 "northpoledobjectdstoraged"] (find-northpole puzzle-4-data)))
+  )
