@@ -80,7 +80,9 @@
 (defn valid-room-name?
   "Return true if room is valid."
   [name]
-  (> (valid-room-name name) 0))
+  (try
+    (> (valid-room-name name) 0)
+    (catch Throwable _ false)))
 
 
 (defn sum-sectorid-of-valid-room-names
@@ -88,7 +90,8 @@
   (reduce + (map valid-room-name names)))
 
 (s/fdef rotate-char
-        :args (s/cat :text char? :n integer?)
+        ;; we need to require a pos? or zero? here since negative values doesn't work
+        :args (s/cat :text char? :n (s/and integer? (s/or :zero zero? :pos pos?)))
         :ret  char?)
 
 (defn rotate-char
@@ -98,13 +101,20 @@
     (char (if (> res 122) (+ 97 (mod (- res 97) 26)) res))))
 
 (s/fdef rotate-string
-        :args (s/cat :text string? :n integer?)
+        :args (s/cat :text string? :n (s/and integer? (s/or :zero zero? :pos pos?)))
         :ret  string?)
 
 (defn rotate-string
   "Rotate each char in lower-case string n positions."
   [text n]
   (clojure.string/join (map #(rotate-char % n) (or (seq text) []))))
+
+(s/fdef find-northpole
+        ;; need a better way to generate valid room names
+        ;; ExceptionInfo Couldn't satisfy such-that predicate after 100 tries.  clojure.core/ex-info (core.clj:4725)
+        :args (s/cat :names (s/coll-of (s/and string? valid-room-name?)))
+        :ret  (s/or :not-found nil :found (s/tuple integer? string?)))
+
 
 (defn find-northpole
   [names]
