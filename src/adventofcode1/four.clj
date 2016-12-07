@@ -112,6 +112,8 @@
 (s/fdef find-northpole
         ;; need a better way to generate valid room names
         ;; ExceptionInfo Couldn't satisfy such-that predicate after 100 tries.  clojure.core/ex-info (core.clj:4725)
+        ;; :args (s/cat :names (s/coll-of (s/and string? valid-room-name?)))
+        ;; maybe I should look at https://github.com/gfredericks/test.chuck
         :args (s/cat :names (s/coll-of (s/and string? valid-room-name?)))
         :ret  (s/or :not-found nil :found (s/tuple integer? string?)))
 
