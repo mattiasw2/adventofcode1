@@ -17,6 +17,9 @@
                  ;;; frm .lein: spyscope: #spy/p #spy/d #spy/t
                  ;;; (take 20 (repeat #spy/p (+ 1 2 3)))
                  [spyscope "0.1.6"]
+
+                 ;;; quickcheck
+                 [com.gfredericks/test.chuck "0.2.7"]
                  ]
   :main ^:skip-aot adventofcode1.core
   :target-path "target/%s"

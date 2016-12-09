@@ -4,6 +4,10 @@
    [clojure.spec :as s]
    [clojure.spec.gen :as gen]
    [clojure.spec.test :as stest]
+   [com.gfredericks.test.chuck.generators :as gen']
+   [clojure.test.check :as tc]
+   [clojure.test.check.generators :as tcgen]
+   [clojure.test.check.properties :as tcprop]
 
    [clojure.core.match :refer [match]]
 
@@ -127,7 +131,63 @@
         [(:sectorid room) rotated]
         (recur (rest names))))))
 
+#_(stest/check `find-northpole)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;; using test.check's gen
+#_(def sort-idempotent-prop-tc
+  (prop/for-all [v (gen/vector tcgen/int)]
+                (= (sort v) (sort (sort v)))))
 
-(clojure.spec.test/instrument)
+;; (tc/quick-check 100 sort-idempotent-prop-tc)
+
+;; using specs gen
+#_(def sort-idempotent-prop
+  (prop/for-all [v (gen/vector (gen/int))]
+                (= (sort v) (sort (sort v)))))
+
+;; (tc/quick-check 100 sort-idempotent-prop)
+
+;; using s/gen
+#_(def sort-idempotent-prop-spec
+  (prop/for-all [v (s/gen (s/coll-of int?))]
+                (= (sort v) (sort (sort v)))))
+
+
+;; (tc/quick-check 100 sort-idempotent-prop-spec)
+
+;; instead of using s/coll-of, you can use s/spec
+;; (gen/sample (s/gen (s/cat :foo int? :cols (s/spec (s/+ string?)))))
+
+;; how to get generate :args from a fdef spec
+;; the trick is `split-room-name or #', refering to the ::split-room-name will not work
+
+;; (gen/sample (s/gen (:args (s/get-spec `split-room-name))))
+;; (("") ("") ("dG") ("PF") ("NhM") ("B7H") ("8i") ("") ("w") ("dbFbM"))
+;; adventofcode1.four> (gen/sample (s/gen (:args (s/get-spec #'split-room-name))))
+;; (("") ("") ("Ib") ("4") ("ub") ("g4a") ("2R2i0") ("ZM") ("lCg6Xzm3") ("w"))
+;; adventofcode1.four> (gen/sample (s/gen (:args (s/get-spec #'split-room-name))))
+;; (("") ("") ("2") ("8") ("p") ("xTZ") ("aG7g07") ("QAIw10o") ("f") (""))
+;; adventofcode1.four> (gen/sample (s/gen (:ret (s/get-spec #'split-room-name))))
+;; (["" "" ""] ["G" "1" "0"] ["" "M" "95"] ["mW" "M7T" "3"] ["p60H" "U" ""] ["2" "d1Mk7" "yG"] ["X58p" "N24llA" "W"] ["rS5c8Z" "Ze" "7z43LCy"] ["AFey9sl" "w827" ""] ["IW08KGg" "j" "ic"])
+;; adventofcode1.four> (gen/sample (s/gen (:ret (s/get-spec #'split-room-name))))
+;; (["" "" ""] ["Z" "k" ""] ["" "5O" "45"] ["b4k" "4" "ZL"] ["" "V" ""] ["il" "1M0b" "O074"] ["E" "SzL7" "C321"] ["R5" "" "0928F"] ["f1f4" "36DmP2P" "oh"] ["W6c" "l3GjgsHt" "3P"])
+;; adventofcode1.four> (gen/sample (s/gen (:ret (s/get-spec #'split-room-name))))
+;; (["" "" ""] ["" "" ""] ["1" "" "9H"] ["1" "Gu2" "32"] ["5RO" "a" "p"] ["6lxy" "Z7E" "SO3Mv"] ["42Q" "7CEA0" "i8"] ["YnT6HS" "" ""] ["NfEYQW" "i0hGId" "r8oj"] ["ZHw" "HU0D40An5" "34eLgU"])
+;; adventofcode1.four> (gen/sample (s/gen (s/get-spec ::name)))
+
+;; ("" "" "9Y" "a3a" "j" "H923x" "E" "yxd" "7172c" "lFYt")
+;; adventofcode1.four>
+
+
+;; yes map + apply of gen/sample works fine
+;;
+;; (map #(do (println %)(apply rotate-char %)) (gen/sample (s/gen (:args (s/get-spec #'rotate-char))) 3))
+;; (> 0)
+;; ( 0)
+;; ( 0)
+;; (\> \g \)
+
+#_(clojure.spec.test/instrument)
