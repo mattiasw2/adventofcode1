@@ -186,8 +186,8 @@
 ;;
 ;; (map #(do (println %)(apply rotate-char %)) (gen/sample (s/gen (:args (s/get-spec #'rotate-char))) 3))
 ;; (> 0)
-;; ( 0)
-;; ( 0)
-;; (\> \g \)
+;; (a 0)
+;; (a 0)
+;; (\> \g \a)
 
 #_(clojure.spec.test/instrument)
