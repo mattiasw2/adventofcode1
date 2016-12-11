@@ -20,6 +20,10 @@
 
                  ;;; quickcheck
                  [com.gfredericks/test.chuck "0.2.7"]
+
+                 ;;; base64
+                 [org.clojure/data.codec "0.1.0"]
+
                  ]
   :main ^:skip-aot adventofcode1.core
   :target-path "target/%s"
