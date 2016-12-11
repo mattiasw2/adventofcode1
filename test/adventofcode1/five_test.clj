@@ -18,3 +18,7 @@
 (deftest next-chars-2-test
   (is (= ["1" "8" "f"]
          (take 3 (adventofcode1.five/next-chars "abc" 3231900)))))
+
+(deftest puzzle-5-test
+  (is (= "f77a0e6e"
+         (puzzle-five "cxdnnyjw"))))
