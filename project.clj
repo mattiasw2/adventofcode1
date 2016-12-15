@@ -21,8 +21,11 @@
                  ;;; quickcheck
                  [com.gfredericks/test.chuck "0.2.7"]
 
-                 ;;; base64
+                 ;;; base64 for md5
                  [org.clojure/data.codec "0.1.0"]
+
+                 ;;; prolog and clpfd
+                 [org.clojure/core.logic "0.8.11"]
 
                  ]
   :main ^:skip-aot adventofcode1.core
