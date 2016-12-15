@@ -7,7 +7,7 @@
    [adventofcode1.clpfd10 :refer :all]))
 
 (deftest goal-wolf-cabbage-goat-test
-  (is (= '([0 :goat 1] [1 :nothing 0] [0 :wolf 1] [1 :goat 0] [0 :cabbage 1] [1 :nothing 0] [0 :goat 1])
+  (is (= '({:from 0, :who :goat, :to 1} {:from 1, :who :nothing, :to 0} {:from 0, :who :wolf, :to 1} {:from 1, :who :goat, :to 0} {:from 0, :who :cabbage, :to 1} {:from 1, :who :nothing, :to 0} {:from 0, :who :goat, :to 1})
          (first (goal 7))))
-  (is (= '([0 :goat 1] [1 :nothing 0] [0 :wolf 1] [1 :goat 0] [0 :cabbage 1] [1 :nothing 0] [0 :goat 1])
+  (is (= '({:from 0, :who :goat, :to 1} {:from 1, :who :nothing, :to 0} {:from 0, :who :wolf, :to 1} {:from 1, :who :goat, :to 0} {:from 0, :who :cabbage, :to 1} {:from 1, :who :nothing, :to 0} {:from 0, :who :goat, :to 1})
          (first (goal_unq 7)))))

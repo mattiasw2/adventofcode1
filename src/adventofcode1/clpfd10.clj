@@ -191,19 +191,19 @@
   (fresh [x y wolf goat cabbage]
     (conde
      [(== s1 [x x goat cabbage])
-      (== c [x :wolf y])
+      (== c {:from x :who :wolf :to y})
       (== s2 [y y goat cabbage])
       (change x y)]
      [(== s1 [x wolf x cabbage])
-      (== c [x :goat y])
+      (== c {:from x :who :goat :to y})
       (== s2 [y wolf y cabbage])
       (change x y)]
      [(== s1 [x wolf goat x])
-      (== c [x :cabbage y])
+      (== c {:from x :who :cabbage :to y})
       (== s2 [y wolf goat y])
       (change x y)]
      [(== s1 [x wolf goat cabbage])
-      (== c [x :nothing y])
+      (== c {:from x :who :nothing :to y})
       (== s2 [y wolf goat cabbage])
       (change x y)])))
 
