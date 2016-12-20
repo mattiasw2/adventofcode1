@@ -37,6 +37,11 @@
   [arr]
   (fv/subvec arr 1))
 
+(defn calculate-opposite
+  "n is the number of elfs incl me. Im a at pos 0.
+   Return the opposite position."
+  [n]
+  (int (/ n 2)))
 
 (defn move
   [elfs]
