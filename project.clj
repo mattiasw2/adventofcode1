@@ -27,9 +27,13 @@
                  ;;; prolog and clpfd
                  [org.clojure/core.logic "0.8.11"]
 
-                 ]
+                 ;;; vectors with fast subvec in order to be able to
+                 ;;; delete elements in the middle of vectors
+                 ;;; https://github.com/clojure/core.rrb-vector
+                 [org.clojure/core.rrb-vector "0.0.11"]]
+
+
   :main ^:skip-aot adventofcode1.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}
-             :dev {:dependencies [[org.clojure/test.check "0.9.0"]]}}
-  )
+             :dev {:dependencies [[org.clojure/test.check "0.9.0"]]}})

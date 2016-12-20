@@ -54,12 +54,23 @@
 
 (defn main
   ([s](main 10 (seq s)))
-  ([n row]
-   (println (clojure.string/join row))
-   (if (< n 2) (clojure.string/join row)
-       (let [res (next-row row)]
-         (recur (dec n) res)))))
+  ([n s](main (count (filter #{\.} (seq s))) n (seq s)))
+  ([acc n row]
+   ;; (println (clojure.string/join row))
+   ;; n<2 since we count the input row too
+   (if (< n 2) acc
+       (let [res (next-row row)
+             safe (count (filter #{\.} res))]
+         (recur (+ acc safe) (dec n) res)))))
 
 
+(defn puzzle-a
+  []
+  (main 40 (seq ".^^^.^.^^^^^..^^^..^..^..^^..^.^.^.^^.^^....^.^...^.^^.^^.^^..^^..^.^..^^^.^^...^...^^....^^.^^^^^^^")))
 
-(clojure.spec.test/instrument)
+(defn puzzle-b
+  []
+  (main 400000 (seq ".^^^.^.^^^^^..^^^..^..^..^^..^.^.^.^^.^^....^.^...^.^^.^^.^^..^^..^.^..^^^.^^...^...^^....^^.^^^^^^^")))
+
+
+;; (clojure.spec.test/instrument)
