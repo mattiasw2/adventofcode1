@@ -1,4 +1,4 @@
-(ns adventofcode1.nineteen-c
+(ns adventofcode1.nineteen-d
   "http://adventofcode.com/2016/day/19"
   (:require
    [clojure.spec :as s]
@@ -23,23 +23,23 @@
 
 (defn catvec
   [a b]
-  (vec (concat a b)))
+  (concat a b))
 
 (defn remove-at
   "Remove cell at idx in arr."
   [arr idx]
-  (catvec (subvec arr 0 idx) (subvec arr (inc idx))))
+  (catvec (take idx arr) (nthrest arr (inc idx))))
 
 
 (defn create-arr
   "Return a vector with pair [1 idx] where idx starts at 1...size (incl)."
   [size]
-  (vec (for [x (range 1 (inc size))]
-            [1 x])))
+  (for [x (range 1 (inc size))]
+    [1 x]))
 
 (defn fv-rest
   [arr]
-  (subvec arr 1))
+  (rest arr))
 
 (defn calculate-opposite
   "n is the number of elfs incl me. Im a at pos 0.

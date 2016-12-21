@@ -5,14 +5,18 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
                  ;; https://github.com/ptaoussanis/timbre
-                 [com.taoensso/timbre "4.7.4"]
+                 [com.taoensso/timbre "4.8.0"]
                  ;; (refresh) seems to work better if I switch to user first: (in-ns 'user)
                  ;; user=> (require '[clojure.tools.namespace.repl :refer [refresh]])
                  ;; user=> (refresh)
                  [org.clojure/tools.namespace "0.2.11"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/core.match "0.3.0-alpha4"]
-                 [prismatic/schema "1.1.3"]
+                 ;; [prismatic/schema "1.1.3"]
+
+                 ;; https://github.com/nathanmarz/specter
+                 ;; https://github.com/nathanmarz/specter/wiki/List-of-Navigators#all
+                 [com.rpl/specter "0.13.1"]
 
                  ;;; frm .lein: spyscope: #spy/p #spy/d #spy/t
                  ;;; (take 20 (repeat #spy/p (+ 1 2 3)))

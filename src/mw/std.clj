@@ -1,9 +1,8 @@
 (ns mw.std
   (:require
-    [schema.core :as s]
-    [taoensso.truss :as truss :refer (have have! have?)]
-    [taoensso.timbre :as timbre]
-    )
+   [taoensso.truss :as truss :refer (have have! have?)]
+   [taoensso.timbre :as timbre]
+   )
   (:gen-class)
   )
 

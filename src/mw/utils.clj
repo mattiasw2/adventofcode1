@@ -1,6 +1,5 @@
 (ns mw.utils
   (:require
-   [schema.core :as s]
    [taoensso.truss :as truss :refer (have have! have?)]
    [mw.std :refer :all]
    )
