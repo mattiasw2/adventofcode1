@@ -16,6 +16,10 @@
    spyscope.core
    adventofcode1.spec-test-instrument-debug))
 
+(defn parse-int
+  [s]
+  (int (bigint s)))
+
 (defn catvec
   [a b]
   (vec (concat a b)))
@@ -52,7 +56,7 @@
   "Apply cmd to text. Return text as is if cmd isn't this cmd"
   [cmd text]
   (if-let [[_ fr to] (re-find (re-matcher #"^move position (\d+) to position (\d+)$" cmd))]
-    (move-position text fr to)))
+    (move-position text (parse-int fr) (parse-int to))))
 
 ;; swap position X with position Y means that the letters at indexes X
 ;; and Y (counting from 0) should be swapped.
@@ -70,7 +74,7 @@
   "Apply cmd to text. Return text as is if cmd isn't this cmd"
   [cmd text]
   (if-let [[_ fr to] (re-find (re-matcher #"^swap position (\d+) with position (\d+)$" cmd))]
-    (swap-position text fr to)))
+    (swap-position text (parse-int fr) (parse-int to))))
 
 ;; reverse positions X through Y means that the span of letters at
 ;; indexes X through Y (including the letters at X and Y) should be
@@ -89,7 +93,7 @@
   "Apply cmd to text. Return text as is if cmd isn't this cmd"
   [cmd text]
   (if-let [[_ fr to] (re-find (re-matcher #"^reverse positions (\d+) through (\d+)$" cmd))]
-    (reverse-positions text fr to)))
+    (reverse-positions text (parse-int fr) (parse-int to))))
 
 
 ;; rotate left/right X steps means that the whole string should be
@@ -97,7 +101,11 @@
 ;; dabc.
 (defn rotate-right
   [text fr]
-  text)
+  (let [arr (seq text)
+        fr (mod fr (count arr))
+        cnt (- (count arr) fr)]
+    ;; 12345 2 => 45123
+    (str/join (concat (nthrest arr cnt)(take cnt arr)))))
 
 
 ;; rotate right 4 steps
@@ -105,14 +113,16 @@
   "Apply cmd to text. Return text as is if cmd isn't this cmd"
   [cmd text]
   (if-let [[_ fr] (re-find (re-matcher #"^rotate right (\d+) steps?$" cmd))]
-    (rotate-right text fr)))
+    (rotate-right text (parse-int fr))))
 
 ;; rotate left/right X steps means that the whole string should be
 ;; rotated; for example, one right rotation would turn abcd into
 ;; dabc.
 (defn rotate-left
   [text fr]
-  text)
+  (let [arr (vec (seq text))
+        fr (mod fr (count arr))]
+    (str/join (concat (nthrest arr fr)(take fr arr)))))
 
 
 ;; rotate right 4 steps
@@ -120,12 +130,15 @@
   "Apply cmd to text. Return text as is if cmd isn't this cmd"
   [cmd text]
   (if-let [[_ fr] (re-find (re-matcher #"^rotate left (\d+) steps?$" cmd))]
-    (rotate-left text fr)))
+    (rotate-left text (parse-int fr))))
 
 
 (defn rotate-based-on
   [text fr]
-  text)
+  (if-let [idx (str/index-of text fr)]
+    (rotate-right text (inc (if (>= idx 4)(inc idx) idx)))))
+
+
 
 ;; rotate based on position of letter X means that the whole string
 ;; should be rotated to the right based on the index of letter X
@@ -133,6 +146,9 @@
 ;; rotations. Once the index is determined, rotate the string to the
 ;; right one time, plus a number of times equal to that index, plus
 ;; one additional time if the index was at least 4.
+
+;; (rotate-based-on "ecabd" "d") => "decab"
+;; (rotate-based-on "abdec" "b") => "ecabd"
 
 ;; rotate based on position of letter a
 (defn parse-rotate-based-on
@@ -146,7 +162,11 @@
 ;; be swapped (regardless of where they appear in the string).
 (defn swap-letter
   [text fr to]
-  text)
+  (-> text
+   (str/replace fr ".")
+   (str/replace to fr)
+   (str/replace "." to)))
+
 
 
 ;; swap letter d with letter a
@@ -154,7 +174,7 @@
   "Apply cmd to text. Return text as is if cmd isn't this cmd"
   [cmd text]
   (if-let [[_ fr to] (re-find (re-matcher #"^swap letter ([a-z]+) with letter ([a-z]+)$" cmd))]
-    (swap-letter text fr to)))
+    (swap-letter text fr  to)))
 
 
 (defn call-cmd
@@ -178,12 +198,30 @@
   (if (seq l)
     (do
       (assert (first l))
-      (recur (call-cmd (first l) text)(rest l)))
+      (let [res (call-cmd (first l) text)]
+        (println (str (first l) " => " res))
+        (recur res (rest l))))
     text))
 
 (defn process
   ([text](process text (str/split-lines mydata)))
   ([text l](process-2 text l)))
+
+
+(def testdata
+  "swap position 4 with position 0
+swap letter d with letter b
+reverse positions 0 through 4
+rotate left 1 step
+move position 1 to position 4
+move position 3 to position 0
+rotate based on position of letter b
+rotate based on position of letter d
+")
+
+(defn sample
+  []
+  (process "abcde" (str/split-lines testdata)))
 
 
 (def mydata
