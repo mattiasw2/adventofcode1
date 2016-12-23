@@ -14,6 +14,7 @@
    [clojure.string :as str]
 
    spyscope.core
+   mw.utils
    adventofcode1.spec-test-instrument-debug))
 
 (defn parse-int
@@ -257,13 +258,13 @@ rotate based on position of letter d
      (mycall (cons (first cmd) (cons text (rest (rest cmd)))))))
 
 (defn try-call-cmd-backwards
-  ([cmd text-after](try-call-cmd-backwards (combo/permutations (seq text-after)) cmd text-after))
-  ([perm cmd text-after]
+  ([cmd text-after](try-call-cmd-backwards (combo/permutations (seq text-after)) (call-cmd cmd "dummy") text-after))
+  ([perm parsed-cmd text-after]
    (if-not (seq? perm) nil
            (let [text (str/join (first perm))
-                 found (call-cmd-backwards text (call-cmd cmd "dummy") text-after)]
+                 found (call-cmd-backwards text parsed-cmd text-after)]
              (if found text
-                 (recur (rest perm) cmd text-after))))))
+                 (recur (rest perm) parsed-cmd text-after))))))
 
 (defn process-b-2
   [text-after l]
