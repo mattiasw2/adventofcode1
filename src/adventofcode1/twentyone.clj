@@ -10,7 +10,7 @@
    [clojure.test.check.properties :as tcprop]
 
    [clojure.core.match :refer [match]]
-
+   [clojure.math.combinatorics :as combo]
    [clojure.string :as str]
 
    spyscope.core
@@ -33,6 +33,20 @@
   "Insert cell at idx in arr."
   [arr idx v]
   (catvec (subvec arr 0 idx) (catvec [v] (subvec arr idx))))
+
+
+;;; for 2nd puzzle
+;;; reversable operations
+;;; swap-position
+;;; reverse-positions
+;;; rotate-right
+;;; rotate-left
+;;; swap-letter
+;;;
+;;; non-reversible operations
+;;; move-position
+;;; rotate-based-on
+
 
 
 
@@ -222,6 +236,12 @@ rotate based on position of letter d
 (defn sample
   []
   (process "abcde" (str/split-lines testdata)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+
+
 
 
 (def mydata

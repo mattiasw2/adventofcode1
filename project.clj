@@ -28,6 +28,9 @@
                  ;;; base64 for md5
                  [org.clojure/data.codec "0.1.0"]
 
+                 ;;; all permutations of a string
+                 [org.clojure/math.combinatorics "0.1.3"]
+
                  ;;; prolog and clpfd
                  [org.clojure/core.logic "0.8.11"]
 
