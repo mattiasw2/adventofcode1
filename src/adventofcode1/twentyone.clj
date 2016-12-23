@@ -197,7 +197,7 @@
   [form]
   (if form (apply (first form)(rest form))))
 
-(defn call-cmd
+(defn parse-cmd
   [cmd text]
   (let [ret (or (parse-rotate-left cmd text)
                 (parse-rotate-right cmd text)
@@ -218,7 +218,7 @@
   (if (seq l)
     (do
       (assert (first l))
-      (let [res (mycall (call-cmd (first l) text))]
+      (let [res (mycall (parse-cmd (first l) text))]
         (println (str (first l) " => " res))
         (recur res (rest l))))
     text))
@@ -258,7 +258,7 @@ rotate based on position of letter d
      (mycall (cons (first cmd) (cons text (rest (rest cmd)))))))
 
 (defn try-call-cmd-backwards
-  ([cmd text-after](try-call-cmd-backwards (combo/permutations (seq text-after)) (call-cmd cmd "dummy") text-after))
+  ([cmd text-after](try-call-cmd-backwards (combo/permutations (seq text-after)) (parse-cmd cmd "dummy") text-after))
   ([perm parsed-cmd text-after]
    (if-not (seq? perm) nil
            (let [text (str/join (first perm))
@@ -276,6 +276,8 @@ rotate based on position of letter d
         (recur res (rest l))))
     text-after))
 
+;; (mw.utils/timed "foo" (process-b "fbgdceah")) => "gcehdbfa"
+;; (mw.utils/timed "foo" (process "gcehdbfa")) => "fbgdceah"
 (defn process-b
   ([text-after](process-b text-after (reverse (str/split-lines mydata))))
   ([text-after l](process-b-2 text-after l)))
