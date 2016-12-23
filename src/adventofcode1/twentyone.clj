@@ -198,13 +198,13 @@
 
 (defn call-cmd
   [cmd text]
-  (let [ret (or (mycall (parse-rotate-left cmd text))
-                (mycall (parse-rotate-right cmd text))
-                (mycall (parse-move-position cmd text))
-                (mycall (parse-reverse-positions cmd text))
-                (mycall (parse-rotate-based-on cmd text))
-                (mycall (parse-swap-letter cmd text))
-                (mycall (parse-swap-position cmd text)))]
+  (let [ret (or (parse-rotate-left cmd text)
+                (parse-rotate-right cmd text)
+                (parse-move-position cmd text)
+                (parse-reverse-positions cmd text)
+                (parse-rotate-based-on cmd text)
+                (parse-swap-letter cmd text)
+                (parse-swap-position cmd text))]
     (if (nil? ret){:error :not-a-command :data cmd}
         ret)))
 
@@ -217,7 +217,7 @@
   (if (seq l)
     (do
       (assert (first l))
-      (let [res (call-cmd (first l) text)]
+      (let [res (mycall (call-cmd (first l) text))]
         (println (str (first l) " => " res))
         (recur res (rest l))))
     text))
@@ -246,6 +246,45 @@ rotate based on position of letter d
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 
+;; (call-cmd-backwards "abc" (list rotate-right "foo" 1) "cab") ==> true
+;; overkill except for non-reversible operations
+;; * move-position
+;; * rotate-based-on
+(defn call-cmd-backwards
+  "Return non-nil if text is the correct answer."
+  [text cmd text-after]
+  (= text-after
+     (mycall (cons (first cmd) (cons text (rest (rest cmd)))))))
+
+(defn try-call-cmd-backwards
+  ([cmd text-after](try-call-cmd-backwards (combo/permutations (seq text-after)) cmd text-after))
+  ([perm cmd text-after]
+   (if-not (seq? perm) nil
+           (let [text (str/join (first perm))
+                 found (call-cmd-backwards text (call-cmd cmd "dummy") text-after)]
+             (if found text
+                 (recur (rest perm) cmd text-after))))))
+
+(defn process-b-2
+  [text-after l]
+  (if (seq l)
+    (do
+      (assert (first l))
+      (let [res (try-call-cmd-backwards (first l) text-after)]
+        (println (str (first l) " => " res))
+        (recur res (rest l))))
+    text-after))
+
+(defn process-b
+  ([text-after](process-b text-after (reverse (str/split-lines mydata))))
+  ([text-after l](process-b-2 text-after l)))
+
+
+(defn sample-b
+  []
+  (assert
+   (= "abcde"
+      (process-b "decab" (reverse (str/split-lines testdata))))))
 
 
 
