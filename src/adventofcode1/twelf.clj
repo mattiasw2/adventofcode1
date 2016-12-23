@@ -12,6 +12,7 @@
    [clojure.core.match :refer [match]]
    [clojure.math.combinatorics :as combo]
    [clojure.string :as str]
+   [com.rpl.specter :as sp]
 
    spyscope.core
    mw.utils
@@ -23,8 +24,15 @@
 
 ;; Initially, only "a" to "d"
 (s/def ::regs (s/map-of string? integer?))
+(s/def ::ip   integer?)
 
-(s/def ::computer (s/keys :req-un [::regs]))
+(s/def ::computer (s/keys :req-un [::ip ::regs]))
+
+;; since :y doesn't always exists, I might have to remove it
+(s/def ::cmd  (s/keys :reg-un [::cmd ::x ::y]))
+(s/def ::cmds (s/coll-of ::cmd))
+
+
 
 (s/fdef init-computer
         :args (s/cat)
@@ -32,7 +40,8 @@
 
 (defn init-computer
   []
-  {:regs {"a" 0 "b" 0 "c" 0 "d" 0}})
+  {:ip 0
+   :regs {"a" 0 "b" 0 "c" 0 "d" 0}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; helpers
@@ -47,7 +56,7 @@
 (defn parse-cpy-value
   [cmd]
   (if-let [[_ x y] (re-find (re-matcher #"^cpy (-?\d+) ([a-z]+)$" cmd))]
-    {:cmd :cpy-value :x x :y y}))
+    {:cmd :cpy-value :x (parse-int x) :y y}))
 
 (defn parse-cpy-reg
   [cmd]
@@ -68,13 +77,13 @@
 (defn parse-jnz-value
   [cmd]
   (if-let [[_ x y] (re-find (re-matcher #"^jnz (-?\d+) (-?\d+)$" cmd))]
-    {:cmd :jnx-value :x x :y y}))
+    {:cmd :jnz-value :x (parse-int x) :y (parse-int y)}))
 
 ;; do we know the 2nd arg is always a number? Yes, at least in my sample
 (defn parse-jnz-x-reg
   [cmd]
   (if-let [[_ x y] (re-find (re-matcher #"^jnz ([a-z]+) (-?\d+)$" cmd))]
-    {:cmd :jnx-x-reg :x x :y y}))
+    {:cmd :jnz-x-reg :x x :y (parse-int y)}))
 
 
 (defn parse-cmd
@@ -89,18 +98,48 @@
         ret)))
 
 ;; testdata defined further down
+(declare sample-data)
 (declare puzzle-input-a)
 
 (defn parse-cmds
   ([](parse-cmds (str/split-lines puzzle-input-a)))
   ([cmds]
-   (map parse-cmd cmds)))
+   (vec (map parse-cmd cmds))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; execution
 
+(s/fdef exec
+        :args (s/cat :cmd ::cmd :ip ::ip :regs ::regs)
+        :ret  (s/tuple ::ip ::regs))
 
+(defn exec
+  [cmd ip regs]
+  (match (:cmd cmd)
+    :cpy-value [(inc ip) (assoc regs (:y cmd) (:x cmd))]
+    :cpy-reg   [(inc ip) (assoc regs (:y cmd) (get regs (:x cmd)))]
+    :inc       [(inc ip) (assoc regs (:x cmd) (inc (get regs (:x cmd))))]
+    :dec       [(inc ip) (assoc regs (:x cmd) (dec (get regs (:x cmd))))]
+    :jnz-value (if-not (zero? (:x cmd))
+                 [(+ ip (:y cmd)) regs]
+                 [(inc ip) regs])
+    :jnz-x-reg (if-not (zero? (get regs (:x cmd)))
+                 [(+ ip (:y cmd)) regs]
+                 [(inc ip) regs])))
+
+
+
+(defn main
+  ;;([](main (parse-cmds (str/split-lines sample-data)) (init-computer)))
+  ([](main (parse-cmds (str/split-lines puzzle-input-a)) (init-computer)))
+  ([cmds comp]
+   (let [{:keys [ip regs]} comp]
+     ;; we are finished if there is no more cmds to run
+     (if (or (neg? ip)(>= ip (count cmds)))
+         comp
+         (let [[ip2 regs2] (exec (nth cmds ip) ip regs)]
+           (recur cmds {:ip ip2 :regs regs2}))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -138,3 +177,6 @@ dec d
 jnz d -2
 dec c
 jnz c -5")
+
+
+;; (clojure.spec.test/instrument)
