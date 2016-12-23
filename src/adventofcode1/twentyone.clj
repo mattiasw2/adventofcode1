@@ -70,7 +70,7 @@
   "Apply cmd to text. Return text as is if cmd isn't this cmd"
   [cmd text]
   (if-let [[_ fr to] (re-find (re-matcher #"^move position (\d+) to position (\d+)$" cmd))]
-    (move-position text (parse-int fr) (parse-int to))))
+    (list move-position text (parse-int fr) (parse-int to))))
 
 ;; swap position X with position Y means that the letters at indexes X
 ;; and Y (counting from 0) should be swapped.
@@ -88,7 +88,7 @@
   "Apply cmd to text. Return text as is if cmd isn't this cmd"
   [cmd text]
   (if-let [[_ fr to] (re-find (re-matcher #"^swap position (\d+) with position (\d+)$" cmd))]
-    (swap-position text (parse-int fr) (parse-int to))))
+    (list swap-position text (parse-int fr) (parse-int to))))
 
 ;; reverse positions X through Y means that the span of letters at
 ;; indexes X through Y (including the letters at X and Y) should be
@@ -107,7 +107,7 @@
   "Apply cmd to text. Return text as is if cmd isn't this cmd"
   [cmd text]
   (if-let [[_ fr to] (re-find (re-matcher #"^reverse positions (\d+) through (\d+)$" cmd))]
-    (reverse-positions text (parse-int fr) (parse-int to))))
+    (list reverse-positions text (parse-int fr) (parse-int to))))
 
 
 ;; rotate left/right X steps means that the whole string should be
@@ -127,7 +127,7 @@
   "Apply cmd to text. Return text as is if cmd isn't this cmd"
   [cmd text]
   (if-let [[_ fr] (re-find (re-matcher #"^rotate right (\d+) steps?$" cmd))]
-    (rotate-right text (parse-int fr))))
+    (list rotate-right text (parse-int fr))))
 
 ;; rotate left/right X steps means that the whole string should be
 ;; rotated; for example, one right rotation would turn abcd into
@@ -144,7 +144,7 @@
   "Apply cmd to text. Return text as is if cmd isn't this cmd"
   [cmd text]
   (if-let [[_ fr] (re-find (re-matcher #"^rotate left (\d+) steps?$" cmd))]
-    (rotate-left text (parse-int fr))))
+    (list rotate-left text (parse-int fr))))
 
 
 (defn rotate-based-on
@@ -169,7 +169,7 @@
   "Apply cmd to text. Return text as is if cmd isn't this cmd"
   [cmd text]
   (if-let [[_ fr] (re-find (re-matcher #"^rotate based on position of letter ([a-z]+)$" cmd))]
-    (rotate-based-on text fr)))
+    (list rotate-based-on text fr)))
 
 
 ;; swap letter X with letter Y means that the letters X and Y should
@@ -188,18 +188,23 @@
   "Apply cmd to text. Return text as is if cmd isn't this cmd"
   [cmd text]
   (if-let [[_ fr to] (re-find (re-matcher #"^swap letter ([a-z]+) with letter ([a-z]+)$" cmd))]
-    (swap-letter text fr  to)))
+    (list swap-letter text fr to)))
 
+(defn mycall
+  "form is a list where first arg is a function and rest is args. Execute it if non-nil.
+   Not using eval, since eval is much more general, like handles macros etc."
+  [form]
+  (if form (apply (first form)(rest form))))
 
 (defn call-cmd
   [cmd text]
-  (let [ret (or (parse-rotate-left cmd text)
-                (parse-rotate-right cmd text)
-                (parse-move-position cmd text)
-                (parse-reverse-positions cmd text)
-                (parse-rotate-based-on cmd text)
-                (parse-swap-letter cmd text)
-                (parse-swap-position cmd text))]
+  (let [ret (or (mycall (parse-rotate-left cmd text))
+                (mycall (parse-rotate-right cmd text))
+                (mycall (parse-move-position cmd text))
+                (mycall (parse-reverse-positions cmd text))
+                (mycall (parse-rotate-based-on cmd text))
+                (mycall (parse-swap-letter cmd text))
+                (mycall (parse-swap-position cmd text)))]
     (if (nil? ret){:error :not-a-command :data cmd}
         ret)))
 
