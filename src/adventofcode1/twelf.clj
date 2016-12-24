@@ -132,7 +132,11 @@
 
 (defn main
   ;;([](main (parse-cmds (str/split-lines sample-data)) (init-computer)))
-  ([](main (parse-cmds (str/split-lines puzzle-input-a)) (init-computer)))
+  ;; first puzzle
+  ;;([](main (parse-cmds (str/split-lines puzzle-input-a)) (init-computer)))
+  ;; 2nd puzzle
+  ([](main (parse-cmds (cons "cpy 1 c" (str/split-lines puzzle-input-a)))
+           (init-computer)))
   ([cmds comp]
    (let [{:keys [ip regs]} comp]
      ;; we are finished if there is no more cmds to run
