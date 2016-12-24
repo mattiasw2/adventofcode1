@@ -81,6 +81,7 @@
   (if-let [[_ x y] (re-find (re-matcher #"^jnz (-?\d+) (-?\d+)$" cmd))]
     {:cmd :jnz-value :x (parse-int x) :y (parse-int y)}))
 
+;; added in 2nd puzzle
 (defn parse-jnz-value-2
   [cmd]
   (if-let [[_ x y] (re-find (re-matcher #"^jnz (-?\d+) ([a-z]+)$" cmd))]
@@ -138,7 +139,7 @@
       [cmds (inc ip) regs]
       (let
           [before (nth cmds idx)
-           after
+           after-instruction
            (match [(:cmd before)(:y before)]
              [:inc nil] :dec
              [_    nil] :inc
@@ -146,7 +147,7 @@
              [:jnz-value _] :cpy-value
              [:cpy-reg _]   :jnz-x-reg
              [:cpy-value _] :jnz-value)
-           cmds2 (assoc cmds idx (sp/setval [:cmd] after before))]
+           cmds2 (assoc cmds idx (sp/setval [:cmd] after-instruction before))]
         [cmds2 (inc ip) regs]))))
 
 (s/fdef maybe-deref
@@ -200,6 +201,8 @@
          (let [[cmds2 ip2 regs2] (exec cmds (nth cmds ip) ip regs)]
            (recur (inc ctr) cmds2 {:ip ip2 :regs regs2}))))))
 
+
+(clojure.spec.test/instrument)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; sample data
@@ -273,5 +276,3 @@ inc d
 jnz d -2
 inc c
 jnz c -5")
-
-(clojure.spec.test/instrument)
