@@ -132,17 +132,32 @@
         :args (s/cat :board ::board :row integer? :col integer?)
         :ret  integer?)
 
+;; (defn count-neighbors-including-diagonals
+;;   "Count non-wall neighbors."
+;;   [board row col]
+;;   (reduce +
+;;           (for [r (range -1 2)]
+;;            (reduce +
+;;             (for [c (range -1 2)]
+;;               (if (and (zero? r)(zero? c))
+;;                 0
+;;                 (if (= \# (board-cell board (+ row r) (+ col c)))
+;;                   0
+;;                   1)))))))
+
 (defn count-neighbors
   "Count non-wall neighbors."
   [board row col]
   (reduce +
-          (for [r (range -1 2)]
-            (for [c (range -1 2)]
-              (if (and (zero? r)(zero? c))
-                0
-                (if (= \# (board-cell board (+ row r) (+ col c)))
-                  0
-                  1))))))
+          (for [[r c] [[-1 0][0 -1][0 1][1 0]]]
+            (if (= \# (board-cell board (+ row r) (+ col c)))
+              0
+              1))))
+
+(defn is-numbered-cell?
+  [board row col]
+  (let [cnt (board-cell board row col)]
+    (and (not= cnt \#)(not= cnt \.))))
 
 (s/fdef horizontal-paths
         :args (s/alt
@@ -196,9 +211,52 @@
        ;; ignore path that is a single cell
        (if (or (= start-col end-col)(= start-col (dec end-col)))
          (recur found board row (inc end-col)(inc end-col))
-         (let [found2 (cons {:from [row start-col] :to [row (dec end-col)]} found)]
+         (let [found2 (cons {:from [start-col row] :to [(dec end-col) row]} found)]
            (recur found2 board row (inc end-col)(inc end-col))))
        (recur found board row start-col (inc end-col))))))
+
+
+(s/fdef maybe-split-horizontal-path
+        :args (s/cat :board ::board :path ::path)
+        :ret  (s/coll-of ::path))
+
+(defn maybe-split-horizontal-path
+  [board path]
+  (assert (= (first (:from path))
+             (first (:to   path)))
+          "Must be on same row!")
+  (filter #(> (first %) 2)
+        (map
+         #(list (+
+                 ;; break if many neighbors or cell contain a number
+                 (if (is-numbered-cell? board (first (:from path)) %) 99 0)
+                 (count-neighbors board (first (:from path)) %))
+                (first (:from path))
+                %)
+         (range (second (:from path))(inc (second (:to path)))))))
+
+
+(s/fdef maybe-split-vertical-path
+        :args (s/cat :board ::board :path ::path)
+        :ret  (s/coll-of ::path))
+
+
+(defn maybe-split-vertical-path
+  [board path]
+  (assert (= (second (:from path))
+             (second (:to   path)))
+          "Must be on same column!")
+  (filter #(> (first %) 2)
+        (map
+         #(list (+
+                 ;; break if many neighbors or cell contain a number
+                 (if (is-numbered-cell? board (second (:from path)) %) 99 0)
+                 (count-neighbors board (second (:from path)) %))
+                %
+                (second (:from path)))
+         (range (first (:from path))(inc (first (:to path)))))))
+
+
 
 
 ;; Not checking :ret, why?

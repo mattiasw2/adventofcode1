@@ -40,8 +40,23 @@
     #...##
     ######"))
 
+(def board-4
+ (board-make
+  "###########
+  #0.1.....2#
+  #.###.###.#
+  #4.......3#
+  ###########"))
+
 
 (deftest horizontal-paths-tests
   (is (= [ {:from [1 1], :to [1 2]} ] (horizontal-paths board-0 1)))
   (is (= [ {:from [1 1], :to [1 2]} ] (horizontal-paths board-2 1)))
-  (is (= [ {:from [1 1], :to [1 3]} ] (horizontal-paths board-3 1))))
+  (is (= [ {:from [1 1], :to [1 3]} ] (horizontal-paths board-3 1)))
+  (is (= [ {:from [1 1], :to [1 9]} ] (horizontal-paths board-4 1))))
+
+(deftest vertical-paths-tests
+  (is (= [ {:from [1 1], :to [1 3]} ] (vertical-paths board-4 1)))
+  (is (= [  ]                         (vertical-paths board-4 3)))
+  (is (= [ {:from [5 1], :to [5 3]} ] (vertical-paths board-4 5)))
+  (is (= [ {:from [9 1], :to [9 3]} ] (vertical-paths board-4 9))))
