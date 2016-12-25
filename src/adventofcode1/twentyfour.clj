@@ -216,11 +216,11 @@
        (recur found board row start-col (inc end-col))))))
 
 
-(s/fdef maybe-split-horizontal-path
+(s/fdef split-horizontal-path-at
         :args (s/cat :board ::board :path ::path)
         :ret  (s/coll-of ::path))
 
-(defn maybe-split-horizontal-path
+(defn split-horizontal-path-at
   [board path]
   (assert (= (first (:from path))
              (first (:to   path)))
@@ -236,12 +236,12 @@
          (range (second (:from path))(inc (second (:to path)))))))
 
 
-(s/fdef maybe-split-vertical-path
+(s/fdef split-vertical-path-at
         :args (s/cat :board ::board :path ::path)
         :ret  (s/coll-of ::path))
 
 
-(defn maybe-split-vertical-path
+(defn split-vertical-path-at
   [board path]
   (assert (= (second (:from path))
              (second (:to   path)))
