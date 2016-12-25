@@ -84,7 +84,9 @@
 (s/def ::board-row (s/with-gen (s/and string? board-chars?) #(gen'/string-from-regex #"#([0-9.#]{10})#")))
 (s/def ::board (s/coll-of ::board-row)) ;; :count max-height)
 
-(s/def ::path (s/tuple (s/tuple integer? integer?)(s/tuple integer? integer?)))
+(s/def ::from (s/tuple integer? integer?))
+(s/def ::to   (s/tuple integer? integer?))
+(s/def ::path  (s/keys :req-un [::from ::to]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -141,23 +143,6 @@
                 (if (= \# (board-cell board (+ row r) (+ col c)))
                   0
                   1))))))
-
-
-;; (defn horizontal-paths
-;;   ([board]
-;;    (horizontal-paths [] 1 1 board))
-;;   ([found row col board]
-;;    ;; >= since last row is just ############
-;;    (if (>= row (board-height board))
-;;      found
-;;      (if (>= col (board-width board))
-;;        (recur found (inc row) 1 board)
-;;        (if (= \# (board-cell board row col))
-;;          (recur found row (inc col) board)
-;;          (let [neighbors (count-neighbors board row col)]
-;;            (match neighbors
-;;              0 (recur found row (inc col) board)
-;;              1 (assert false))))))))
 
 (s/fdef horizontal-paths
         :args (s/alt
