@@ -56,7 +56,24 @@
   (is (= [ {:from [1 1], :to [1 9]} ] (horizontal-paths board-4 1))))
 
 (deftest vertical-paths-tests
-  (is (= [ {:from [1 1], :to [1 3]} ] (vertical-paths board-4 1)))
+  (is (= [ {:from [1 1], :to [3 1]} ] (vertical-paths board-4 1)))
   (is (= [  ]                         (vertical-paths board-4 3)))
-  (is (= [ {:from [5 1], :to [5 3]} ] (vertical-paths board-4 5)))
-  (is (= [ {:from [9 1], :to [9 3]} ] (vertical-paths board-4 9))))
+  (is (= [ {:from [1 5], :to [3 5]} ] (vertical-paths board-4 5)))
+  (is (= [ {:from [1 9], :to [3 9]} ] (vertical-paths board-4 9))))
+
+(deftest split-horizontal-path-at-test
+  ;; path: ({:from [1 1], :to [1 9]} {:from [3 1], :to [3 9]})
+  (let [path (horizontal-paths board-4)]
+    ;; first row
+    (is (= '((101 1 1) (101 1 3) (3 1 5) (101 1 9))
+           (split-horizontal-path-at board-4 (first path))))
+    ;; 3rd row, since no path on 2nd row and exactly one path on first
+    (is (= '((101 3 1) (3 3 5) (101 3 9))
+           (split-horizontal-path-at board-4 (second path))))))
+
+(deftest split-vertical-path-at-test
+  ;; path: ({:from [1 1], :to [3 1]} {:from [1 5], :to [3 5]} {:from [1 9], :to [3 9]})
+  (let [path (vertical-paths board-4)
+        _ (println path)]
+    (is (= '((101 1 1) (101 3 1))
+           (split-vertical-path-at board-4 (first path))))))
