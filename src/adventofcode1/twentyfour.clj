@@ -55,6 +55,15 @@
 ;; specter ideas: for example how to go to any eelement
 ;; https://github.com/nathanmarz/specter/issues/57
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; parallel ideas.
+;; stest/gen uses pmap, which uses (future x) + (deref x)
+;; it derefs (.. Runtime getRuntime availableProcessors) (== 4)
+;; elements at a time
+
+
 ;; (def max-width 10)
 ;; (def max-height 5)
 
