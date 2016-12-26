@@ -16,7 +16,7 @@
 
                  ;; https://github.com/nathanmarz/specter
                  ;; https://github.com/nathanmarz/specter/wiki/List-of-Navigators#all
-                 [com.rpl/specter "0.13.1"]
+                 [com.rpl/specter "0.13.2"]
 
                  ;;; frm .lein: spyscope: #spy/p #spy/d #spy/t
                  ;;; (take 20 (repeat #spy/p (+ 1 2 3)))
