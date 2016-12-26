@@ -258,6 +258,40 @@
          (range (first (:from path))(inc (first (:to path)))))))
 
 
+(defn split-horizontal-path-2
+  [acc path split-at]
+  (let [{:keys [from to]} path
+        [from_row from_col] from
+        [to_row to_col] to
+        [_ row col] split-at]
+    (assert (and
+             (= row from_row)
+             (= from_row to_row))
+            "All row should be the same!")
+    (assert (and
+             (>= col from_col)
+             (<= col to_col))
+            "Split point must be within path!")
+    (if (= from_col col)
+      ;; ignore split at head, (and tail) since no purpose
+      [acc path]
+      [(cons {:from from  :to [row col]} acc)
+       {:from [row col] :to to}])))
+
+
+(defn split-horizontal-path
+  ([path split-ats]
+   (split-horizontal-path [] path split-ats))
+  ([acc path split-ats]
+   (if (empty? split-ats)
+     (if (or (= (first acc) path) (= (:from path)(:to path)))
+       acc
+       (cons path acc))
+     (let [[acc2 new-path] (split-horizontal-path-2 acc path (first split-ats))]
+       (recur acc2 new-path (rest split-ats))))))
+
+
+
 (defn split-vertical-path-2
   [acc path split-at]
   (let [{:keys [from to]} path
@@ -277,8 +311,6 @@
       [acc path]
       [(cons {:from from  :to [row col]} acc)
        {:from [row col] :to to}])))
-
-
 
 
 

@@ -78,6 +78,15 @@
     (is (= '((101 1 1) (101 3 1))
            (split-vertical-path-at board-4 (first path))))))
 
+(deftest split-horizontal-path-at-test
+  (is (= '({:from [1 1], :to [1 3]})
+         (split-horizontal-path {:from [1 1], :to [1 3]} '((101 1 1) (101 1 3)))))
+  (is (= '({:from [1 2], :to [1 3]} {:from [1 1], :to [1 2]})
+         (split-horizontal-path {:from [1 1], :to [1 3]} '((101 1 1) (101 1 2)))))
+  (is (= '({:from [1 2], :to [1 3]} {:from [1 1], :to [1 2]})
+         (split-horizontal-path {:from [1 1], :to [1 3]} '((101 1 2) (101 1 3))))))
+
+
 (deftest split-vertical-path-at-test
   (is (= '({:from [1 1], :to [3 1]})
          (split-vertical-path {:from [1 1], :to [3 1]} '((101 1 1) (101 3 1)))))
