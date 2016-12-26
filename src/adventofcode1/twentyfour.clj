@@ -246,10 +246,11 @@
   (assert (= (second (:from path))
              (second (:to   path)))
           "Must be on same column!")
+  ;; >2 since split if more than 2 neighbors or numbered cell
   (filter #(> (first %) 2)
         (map
          #(list (+
-                 ;; break if many neighbors or cell contain a number
+                 ;; break if many neighbors or if this cell contain a number
                  (if (is-numbered-cell? board (second (:from path)) %) 99 0)
                  (count-neighbors board (second (:from path)) %))
                 %
@@ -257,6 +258,48 @@
          (range (first (:from path))(inc (first (:to path)))))))
 
 
+(defn split-vertical-path-2
+  [acc path split-at]
+  (let [{:keys [from to]} path
+        [from_row from_col] from
+        [to_row to_col] to
+        [_ row col] split-at]
+    (assert (and
+             (= col from_col)
+             (= from_col to_col))
+            "All col should be the same!")
+    (assert (and
+             (>= row from_row)
+             (<= row to_row))
+            "Split point must be within path!")
+    (if (= from_row row)
+      ;; ignore split at head, (and tail) since no purpose
+      [acc path]
+      [(cons {:from from  :to [row col]} acc)
+       {:from [row col] :to to}])))
+
+
+
+
+
+(defn split-vertical-path
+  ([path split-ats]
+   (split-vertical-path [] path split-ats))
+  ([acc path split-ats]
+   (if (empty? split-ats)
+     (if (or (= (first acc) path) (= (:from path)(:to path)))
+       acc
+       (cons path acc))
+     (let [[acc2 new-path] (split-vertical-path-2 acc path (first split-ats))]
+       (recur acc2 new-path (rest split-ats))))))
+
+
+
+
+
+(defn horizontal-splitted-paths
+  [board]
+  nil)
 
 
 ;; Not checking :ret, why?
@@ -272,7 +315,7 @@
 (clojure.spec.test/instrument)
 
 (def puzzle-input-a
-  "#######################################################################################################################################################################################
+  "#######################################################################################################################################################################################)))
 #.....................#.....#.#.......#.......#...#.....#.#...#.........#...........#...#.........#...#...#...#...#.........#.#.....#.........#.#.#.....#.....#.....#.#.#.............#
 #.#.###.#.###.#.###.#.#.###.#.###.#########.#.#####.#####.#.###.#.#.#.#.###.#.###.#.#.#.#.###.#.#.#.#.###.#.#.#.#.###.#.#.#.#.#.#.#.#.###.#.#.#.#.#.#####.###.#.#.#.#.#.###.#.#.#.#.#.#
 #.........#.......#...#.....#.#.#.#.......#.#.....#...#.....#.....#.....#...............#.#.#...#...#.#.....#.......#.#...#.....#.......#...#.#.#...#2#...#.................#...#.....#

@@ -77,3 +77,11 @@
         _ (println path)]
     (is (= '((101 1 1) (101 3 1))
            (split-vertical-path-at board-4 (first path))))))
+
+(deftest split-vertical-path-at-test
+  (is (= '({:from [1 1], :to [3 1]})
+         (split-vertical-path {:from [1 1], :to [3 1]} '((101 1 1) (101 3 1)))))
+  (is (= '({:from [2 1], :to [3 1]} {:from [1 1], :to [2 1]})
+         (split-vertical-path {:from [1 1], :to [3 1]} '((101 1 1) (101 2 1)))))
+  (is (= '({:from [2 1], :to [3 1]} {:from [1 1], :to [2 1]})
+         (split-vertical-path {:from [1 1], :to [3 1]} '((101 2 1) (101 3 1))))))
