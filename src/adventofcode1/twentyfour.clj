@@ -354,6 +354,7 @@
   [m kvs]
   (reduce assoc-duplicates m kvs))
 
+;; this is not a generic function since uses :to
 (defn into-assoc-duplicates-reverse
   "The map `m` contains `k` to several `v`.
    Add all value [v k] in `kvs` to `m`."
