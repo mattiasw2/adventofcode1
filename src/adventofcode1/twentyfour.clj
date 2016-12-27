@@ -346,7 +346,7 @@
   "The map `m` contains `k` to several `v`.
    Add the new value `v` to `m`."
   [m [k v]]
-  (assoc m k (vec (concat (or (get m k) []) [v]))))
+  (assoc m k (conj (or (get m k) []) v)))
 
 (defn into-assoc-duplicates
   "The map `m` contains `k` to several `v`.
