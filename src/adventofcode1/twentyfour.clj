@@ -346,13 +346,19 @@
   "The map `m` contains `k` to several `v`.
    Add the new value `v` to `m`."
   [m [k v]]
-  (assoc m k (conj (or (get m k) []) [v])))
+  (assoc m k (vec (concat (or (get m k) []) [v]))))
 
 (defn into-assoc-duplicates
   "The map `m` contains `k` to several `v`.
    Add all value [k v] in `kvs` to `m`."
   [m kvs]
   (reduce assoc-duplicates m kvs))
+
+(defn into-assoc-duplicates-reverse
+  "The map `m` contains `k` to several `v`.
+   Add all value [v k] in `kvs` to `m`."
+  [m kvs]
+  (reduce (fn [m [k v]] (assoc-duplicates m [(:to v) v])) m kvs))
 
 
 (defn horizontal-splitted-paths
@@ -361,8 +367,9 @@
         splitted-paths-one-direction
         (mapcat #(split-horizontal-path % (split-horizontal-path-at board %)) paths)
         kvs (map #(vec (list (:from %) %)) splitted-paths-one-direction)
-        all2 (into-assoc-duplicates all kvs)]
-    all2))
+        all2 (into-assoc-duplicates all kvs)
+        all3 (into-assoc-duplicates-reverse all2 kvs)]
+    all3))
 
 (defn vertical-splitted-paths
   [all board]
@@ -370,8 +377,21 @@
         splitted-paths-one-direction
         (mapcat #(split-vertical-path % (split-vertical-path-at board %)) paths)
         kvs (map #(vec (list (:from %) %)) splitted-paths-one-direction)
-        all2 (into-assoc-duplicates all kvs)]
-    all2))
+        all2 (into-assoc-duplicates all kvs)
+        all3 (into-assoc-duplicates-reverse all2 kvs)]
+    all3))
+
+
+(s/fdef all-paths
+        :args (s/cat :board ::board)
+        :ret  (s/map-of ::from (s/coll-of ::path)))
+
+(defn all-paths
+  "Get all path from board, split them, reverse them, and add to big map."
+  [board]
+  (let [dir1 (vertical-splitted-paths {} board)
+        dir1b (horizontal-splitted-paths dir1 board)]
+    dir1b))
 
 ;; Not checking :ret, why?
 ;;
@@ -386,7 +406,7 @@
 (clojure.spec.test/instrument)
 
 (def puzzle-input-a
-  "#######################################################################################################################################################################################)))
+  "#######################################################################################################################################################################################))
 #.....................#.....#.#.......#.......#...#.....#.#...#.........#...........#...#.........#...#...#...#...#.........#.#.....#.........#.#.#.....#.....#.....#.#.#.............#
 #.#.###.#.###.#.###.#.#.###.#.###.#########.#.#####.#####.#.###.#.#.#.#.###.#.###.#.#.#.#.###.#.#.#.#.###.#.#.#.#.###.#.#.#.#.#.#.#.#.###.#.#.#.#.#.#####.###.#.#.#.#.#.###.#.#.#.#.#.#
 #.........#.......#...#.....#.#.#.#.......#.#.....#...#.....#.....#.....#...............#.#.#...#...#.#.....#.......#.#...#.....#.......#...#.#.#...#2#...#.................#...#.....#

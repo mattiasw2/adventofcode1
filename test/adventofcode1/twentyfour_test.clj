@@ -94,3 +94,35 @@
          (split-vertical-path {:from [1 1], :to [3 1]} '((101 1 1) (101 2 1)))))
   (is (= '({:from [2 1], :to [3 1]} {:from [1 1], :to [2 1]})
          (split-vertical-path {:from [1 1], :to [3 1]} '((101 2 1) (101 3 1))))))
+
+
+(deftest all-paths-sample1-test
+  (is (=
+       {[1 1] [{:from [1 1], :to [3 1]} {:from [1 1], :to [1 3]}]
+        [1 9] [{:from [1 9], :to [3 9]} {:from [1 3], :to [1 9]}]
+        [3 1] [{:from [1 1], :to [3 1]} {:from [3 1], :to [3 9]}]
+        [3 9] [{:from [1 9], :to [3 9]} {:from [3 1], :to [3 9]}]
+        [1 3] [{:from [1 3], :to [1 9]} {:from [1 1], :to [1 3]}]}
+       (all-paths (board-make sample1)))))
+
+
+(deftest all-paths-sample2-test
+  (is (=
+       {[1 1] [{:from [1 1], :to [3 1]} {:from [1 1], :to [1 3]}]
+        , [1 5] [{:from [1 5], :to [3 5]} {:from [1 5], :to [1 9]} {:from [1 3], :to [1 5]}]
+        , [1 9] [{:from [1 9], :to [3 9]} {:from [1 5], :to [1 9]}]
+        , [3 1] [{:from [1 1], :to [3 1]} {:from [3 1], :to [3 5]}]
+        , [3 5] [{:from [1 5], :to [3 5]} {:from [3 5], :to [3 6]} {:from [3 1], :to [3 5]}]
+        , [3 9] [{:from [1 9], :to [3 9]} {:from [3 6], :to [3 9]}]
+        , [1 3] [{:from [1 3], :to [1 5]} {:from [1 1], :to [1 3]}]
+        , [3 6] [{:from [3 6], :to [3 9]} {:from [3 5], :to [3 6]}]}
+       (all-paths (board-make sample2)))))
+
+
+(deftest assoc-duplicates-test
+  (is (=
+       {:a [11]}
+       (assoc-duplicates {} [:a 11])))
+  (is (=
+       {:a [19], :b [20 21]}
+       (into-assoc-duplicates {} [[:a 19][:b 20][:b 21]]))))
