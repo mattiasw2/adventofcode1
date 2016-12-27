@@ -75,6 +75,13 @@
   #4.......3#
   ###########")
 
+(def sample2
+  "###########
+  #0.1.....2#
+  #.###.###.#
+  #4....6..3#
+  ###########")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; types
@@ -260,8 +267,8 @@
         (map
          #(list (+
                  ;; break if many neighbors or if this cell contain a number
-                 (if (is-numbered-cell? board (second (:from path)) %) 99 0)
-                 (count-neighbors board (second (:from path)) %))
+                 (if (is-numbered-cell? board % (second (:from path))) 99 0)
+                 (count-neighbors board % (second (:from path))))
                 %
                 (second (:from path)))
          (range (first (:from path))(inc (first (:to path)))))))
@@ -335,13 +342,36 @@
        (recur acc2 new-path (rest split-ats))))))
 
 
+(defn assoc-duplicates
+  "The map `m` contains `k` to several `v`.
+   Add the new value `v` to `m`."
+  [m [k v]]
+  (assoc m k (conj (or (get m k) []) [v])))
 
+(defn into-assoc-duplicates
+  "The map `m` contains `k` to several `v`.
+   Add all value [k v] in `kvs` to `m`."
+  [m kvs]
+  (reduce assoc-duplicates m kvs))
 
 
 (defn horizontal-splitted-paths
-  [board]
-  nil)
+  [all board]
+  (let [paths (horizontal-paths board)
+        splitted-paths-one-direction
+        (mapcat #(split-horizontal-path % (split-horizontal-path-at board %)) paths)
+        kvs (map #(vec (list (:from %) %)) splitted-paths-one-direction)
+        all2 (into-assoc-duplicates all kvs)]
+    all2))
 
+(defn vertical-splitted-paths
+  [all board]
+  (let [paths (vertical-paths board)
+        splitted-paths-one-direction
+        (mapcat #(split-vertical-path % (split-vertical-path-at board %)) paths)
+        kvs (map #(vec (list (:from %) %)) splitted-paths-one-direction)
+        all2 (into-assoc-duplicates all kvs)]
+    all2))
 
 ;; Not checking :ret, why?
 ;;
