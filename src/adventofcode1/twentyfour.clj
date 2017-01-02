@@ -175,6 +175,32 @@
   (let [cnt (board-cell board row col)]
     (and (not= cnt \#)(not= cnt \.))))
 
+(s/def ::digit #{\# \. \0 \1 \2 \3 \4 \5 \6 \7 \8 \9})
+(s/def ::numbered-cell  (s/keys :req-un [::digit ::to]))
+(s/def ::numbered-cells (s/coll-of ::numbered-cell))
+
+(s/fdef numbered-cells
+        :args (s/alt
+               :start (s/cat :board ::board)
+               :row   (s/cat :board ::board :row integer?)
+               :recur (s/cat :found ::numbered-cells :board ::board :row integer? :col integer?))
+        :ret  ::numbered-cells)
+
+(defn numbered-cells
+  "Return all numbered cells on `board` at `row`."
+  ([board]
+   (mapcat #(numbered-cells board %)(range 1 (dec (board-height board)))))
+  ([board row]
+   (numbered-cells [] board row 1))
+  ([found board row col]
+   (if (>= col (board-width board))
+     found
+     (if (is-numbered-cell? board row col)
+       (let [found2 (cons {:digit (board-cell board row col) :to [row col]} found)]
+         (recur found2 board row (inc col)))
+       (recur found board row (inc col))))))
+
+
 (s/fdef horizontal-paths
         :args (s/alt
                :start (s/cat :board ::board)
@@ -404,10 +430,12 @@
 ;; :clojure.spec/invalid
 ;; adventofcode1.twentyfour>
 
+
+
 (clojure.spec.test/instrument)
 
 (def puzzle-input-a
-  "#######################################################################################################################################################################################))
+  "#######################################################################################################################################################################################
 #.....................#.....#.#.......#.......#...#.....#.#...#.........#...........#...#.........#...#...#...#...#.........#.#.....#.........#.#.#.....#.....#.....#.#.#.............#
 #.#.###.#.###.#.###.#.#.###.#.###.#########.#.#####.#####.#.###.#.#.#.#.###.#.###.#.#.#.#.###.#.#.#.#.###.#.#.#.#.###.#.#.#.#.#.#.#.#.###.#.#.#.#.#.#####.###.#.#.#.#.#.###.#.#.#.#.#.#
 #.........#.......#...#.....#.#.#.#.......#.#.....#...#.....#.....#.....#...............#.#.#...#...#.#.....#.......#.#...#.....#.......#...#.#.#...#2#...#.................#...#.....#

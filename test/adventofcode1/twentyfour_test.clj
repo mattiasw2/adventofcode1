@@ -49,6 +49,14 @@
   ###########"))
 
 
+(deftest numbered-cells-test
+  (is (= '({:digit \2, :to [3 149]} {:digit \1, :to [5 7]} {:digit \0, :to [11 149]} {:digit \7, :to [17 171]} {:digit \3, :to [17 3]} {:digit \5, :to [27 143]} {:digit \6, :to [27 27]} {:digit \4, :to [35 137]})
+         (numbered-cells (board-make puzzle-input-a))))
+  (is (= '({:digit \2, :to [1 9]} {:digit \1, :to [1 3]} {:digit \0, :to [1 1]} {:digit \3, :to [3 9]} {:digit \4, :to [3 1]})
+         (numbered-cells board-4)))
+  (is (= '()
+         (numbered-cells board-3))))
+
 (deftest horizontal-paths-tests
   (is (= [ {:from [1 1], :to [1 2]} ] (horizontal-paths board-0 1)))
   (is (= [ {:from [1 1], :to [1 2]} ] (horizontal-paths board-2 1)))
