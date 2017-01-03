@@ -98,7 +98,7 @@
 
 ;; (s/def ::board-row (s/coll-of #{\# \. \1 \2 \3 \4 \5 \6 \7 \8 \9} :count max-width))
 (s/def ::board-row (s/with-gen (s/and string? board-chars?) #(gen'/string-from-regex #"#([0-9.#]{10})#")))
-(s/def ::board (s/coll-of ::board-row)) ;; :count max-height)
+(s/def ::board (s/coll-of ::board-row :min-count 1)) ;; :count max-height)
 
 (s/def ::from (s/tuple integer? integer?))
 (s/def ::to   (s/tuple integer? integer?))
@@ -108,9 +108,23 @@
 ;;
 ;; board parsing
 
+(s/fdef board-width
+        :args (s/cat :board ::board)
+        :ret  int?)
+
 (defn board-width
   [b]
   (count (nth b 0)))
+
+(defn foo
+  []
+  (stest/instrument `board-width)
+  (stest/check `board-cell))
+
+
+(s/fdef board-height
+        :args (s/cat :board ::board)
+        :ret  int?)
 
 (defn board-height
   [b]
