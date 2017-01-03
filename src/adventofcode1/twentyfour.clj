@@ -116,6 +116,7 @@
   [b]
   (count (nth b 0)))
 
+
 (defn foo
   []
   (stest/instrument `board-width)
@@ -129,6 +130,7 @@
 (defn board-height
   [b]
   (count b))
+
 
 (s/fdef board-cell
         :args (s/cat :board ::board :row integer? :col integer?)
@@ -290,10 +292,12 @@
            (recur found2 board row (inc end-col)(inc end-col))))
        (recur found board row start-col (inc end-col))))))
 
+(s/def ::neighbor-count
+  (s/cat :count int? :row int? :col int?))
 
 (s/fdef split-horizontal-path-at
         :args (s/cat :board ::board :path ::path)
-        :ret  (s/coll-of ::path))
+        :ret  (s/coll-of ::neighbor-count))
 
 (defn split-horizontal-path-at
   [board path]
@@ -310,10 +314,9 @@
                 %)
          (range (second (:from path))(inc (second (:to path)))))))
 
-
 (s/fdef split-vertical-path-at
         :args (s/cat :board ::board :path ::path)
-        :ret  (s/coll-of ::path))
+        :ret  (s/coll-of ::neighbor-count))
 
 
 (defn split-vertical-path-at

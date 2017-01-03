@@ -95,7 +95,7 @@
     (is (= '((101 1 1) (101 3 1))
            (split-vertical-path-at board-4 (first path))))))
 
-(deftest split-horizontal-path-at-test
+(deftest split-horizontal-path-test
   (is (= '({:from [1 1], :to [1 3]})
          (split-horizontal-path {:from [1 1], :to [1 3]} '((101 1 1) (101 1 3)))))
   (is (= '({:from [1 2], :to [1 3]} {:from [1 1], :to [1 2]})
@@ -104,13 +104,18 @@
          (split-horizontal-path {:from [1 1], :to [1 3]} '((101 1 2) (101 1 3))))))
 
 
-(deftest split-vertical-path-at-test
+(deftest split-vertical-path-test
   (is (= '({:from [1 1], :to [3 1]})
          (split-vertical-path {:from [1 1], :to [3 1]} '((101 1 1) (101 3 1)))))
   (is (= '({:from [2 1], :to [3 1]} {:from [1 1], :to [2 1]})
          (split-vertical-path {:from [1 1], :to [3 1]} '((101 1 1) (101 2 1)))))
   (is (= '({:from [2 1], :to [3 1]} {:from [1 1], :to [2 1]})
-         (split-vertical-path {:from [1 1], :to [3 1]} '((101 2 1) (101 3 1))))))
+         (split-vertical-path {:from [1 1], :to [3 1]} '((101 2 1) (101 3 1)))))
+  (is (= '{[1 1] [{:from [1 1], :to [3 1]}],
+           [1 9] [{:from [1 9], :to [3 9]}],
+           [3 1] [{:from [1 1], :to [3 1]}],
+           [3 9] [{:from [1 9], :to [3 9]}]}
+         (vertical-splitted-paths {} (board-make sample1)))))
 
 
 (deftest all-paths-sample1-test
