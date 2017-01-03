@@ -57,6 +57,15 @@
   (is (= '()
          (numbered-cells board-3))))
 
+(deftest digit-pos-map-test
+  (let [t (numbered-cells adventofcode1.twentyfour-test/board-4 1)]
+    (is (= {\2 [1 9], \1 [1 3], \0 [1 1]}
+           (digit-pos-map t)))
+    (is (= {[1 9] \2, [1 3] \1, [1 1] \0}
+           (pos-digit-map t)))))
+
+
+
 (deftest horizontal-paths-tests
   (is (= [ {:from [1 1], :to [1 2]} ] (horizontal-paths board-0 1)))
   (is (= [ {:from [1 1], :to [1 2]} ] (horizontal-paths board-2 1)))

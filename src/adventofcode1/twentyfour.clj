@@ -214,6 +214,25 @@
          (recur found2 board row (inc col)))
        (recur found board row (inc col))))))
 
+(s/fdef digit-pos-map
+        :args (s/cat :numcells ::numbered-cells)
+        :ret  (s/map-of ::digit (s/tuple integer? integer?)))
+
+(defn digit-pos-map
+  "Convert the numbered cells into a map with digit lookup.
+   Used to find the \0 cells and similar."
+  [numcells]
+  (into {} (map (fn [{:keys [digit to]}] [digit to]) numcells)))
+
+(s/fdef pos-digit-map
+        :args (s/cat :numcells ::numbered-cells)
+        :ret  (s/map-of (s/tuple integer? integer?) ::digit))
+
+(defn pos-digit-map
+  "Convert the numbered cells into a map with pos lookup.
+   Used to check if we are in a numbered cell without looking into the board"
+  [numcells]
+  (into {} (map (fn [{:keys [digit to]}] [to digit]) numcells)))
 
 (s/fdef horizontal-paths
         :args (s/alt
