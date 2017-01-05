@@ -22,7 +22,6 @@
 
 (defn spec-checking-fn
   [v f fn-spec]
-  (println "spec-checking-fn")
   (let [fn-spec (@#'s/maybe-spec fn-spec)
         conform! (fn [v role spec data args]
                    (let [conformed (s/conform spec data)]

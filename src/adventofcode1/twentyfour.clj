@@ -409,8 +409,10 @@
 
 (defn assoc-duplicates
   "The map `m` contains `k` to several `v`.
-   Add the new value `v` to `m`."
+   Add the new value `v` to `m`.
+   Note that duplicates of identical v is also allowed, since vector is used."
   [m [k v]]
+  ;; if no duplicate v:s (assoc m k (conj (or (get m k) #{}) v))
   (assoc m k (conj (or (get m k) []) v)))
 
 (s/fdef into-assoc-duplicates
