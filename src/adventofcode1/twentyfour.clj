@@ -403,12 +403,19 @@
      (let [[acc2 new-path] (split-vertical-path-2 acc path (first split-ats))]
        (recur acc2 new-path (rest split-ats))))))
 
+(s/fdef assoc-duplicates
+        :args (s/cat :m map? :kv (s/tuple (constantly true) (constantly true)))
+        :ret  map?)
 
 (defn assoc-duplicates
   "The map `m` contains `k` to several `v`.
    Add the new value `v` to `m`."
   [m [k v]]
   (assoc m k (conj (or (get m k) []) v)))
+
+(s/fdef into-assoc-duplicates
+        :args (s/cat :m map? :kvs (s/coll-of (s/tuple (constantly true) (constantly true))))
+        :ret  map?)
 
 (defn into-assoc-duplicates
   "The map `m` contains `k` to several `v`.
