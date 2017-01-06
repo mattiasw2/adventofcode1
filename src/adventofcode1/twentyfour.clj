@@ -82,6 +82,20 @@
   #4....6..3#
   ###########")
 
+;;([1 1] [1 3] [1 5] [1 9] [1 5] [3 5] [3 3] [3 5] [5 5] [5 6] [5 9] [3 9] [3 7])
+;;([1 1] [1 3] [1 5] [1 9] [1 5] [3 5] [3 3] [3 1] [5 1] [5 5] [5 6] [5 9] [3 9] [3 7])
+;;([1 1] [1 3] [1 1] [1 3] [1 5] [1 9] [3 9] [3 7] [3 9] [5 9] [5 6] [5 5] [3 5] [3 3])
+;;([1 1] [1 3] [1 1] [1 3] [1 5] [1 9] [1 5] [3 5] [3 3] [3 5] [5 5] [5 6] [5 9] [3 9] [3 7])
+
+(def sample3
+  "###########
+  #0.1.....2#
+  #.###.###.#
+  #..4..#6..#
+  #.###.###.#
+  #.....3...#
+  ###########")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; types
@@ -191,7 +205,8 @@
   (let [cnt (board-cell board row col)]
     (and (not= cnt \#)(not= cnt \.))))
 
-(s/def ::digit #{\# \. \0 \1 \2 \3 \4 \5 \6 \7 \8 \9})
+(s/def ::puzzle-cell    #{\# \. \0 \1 \2 \3 \4 \5 \6 \7 \8 \9})
+(s/def ::digit          #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9})
 (s/def ::numbered-cell  (s/keys :req-un [::digit ::to]))
 (s/def ::numbered-cells (s/coll-of ::numbered-cell))
 
@@ -216,9 +231,10 @@
          (recur found2 board row (inc col)))
        (recur found board row (inc col))))))
 
+(s/def ::dp (s/map-of ::digit (s/tuple integer? integer?)))
 (s/fdef digit-pos-map
         :args (s/cat :numcells ::numbered-cells)
-        :ret  (s/map-of ::digit (s/tuple integer? integer?)))
+        :ret  ::dp)
 
 (defn digit-pos-map
   "Convert the numbered cells into a map with digit lookup.
@@ -226,9 +242,10 @@
   [numcells]
   (into {} (map (fn [{:keys [digit to]}] [digit to]) numcells)))
 
+(s/def ::pd (s/map-of (s/tuple integer? integer?) ::digit))
 (s/fdef pos-digit-map
         :args (s/cat :numcells ::numbered-cells)
-        :ret  (s/map-of (s/tuple integer? integer?) ::digit))
+        :ret  ::pd)
 
 (defn pos-digit-map
   "Convert the numbered cells into a map with pos lookup.
@@ -391,7 +408,6 @@
        {:from [row col] :to to}])))
 
 
-
 (defn split-vertical-path
   ([path split-ats]
    (split-vertical-path [] path split-ats))
@@ -453,10 +469,10 @@
         all3 (into-assoc-duplicates-reverse all2 kvs)]
     all3))
 
-
+(s/def ::all (s/map-of ::from (s/coll-of ::path)))
 (s/fdef all-paths
         :args (s/cat :board ::board)
-        :ret  (s/map-of ::from (s/coll-of ::path)))
+        :ret  ::all)
 
 (defn all-paths
   "Get all path from board, split them, reverse them, and add to big map."
@@ -465,17 +481,121 @@
         dir1b (horizontal-splitted-paths dir1 board)]
     dir1b))
 
-;; Not checking :ret, why?
+;; path = [current & previous]
+;; digits = the list of digits we have passed. when all numbers are there, we are finished!
+;; 0. Is there a digit at current? if so, add it to digits
+;; 1. is digits complete, if so, return path and we are finished
+;; 2. find the list of possible continuations from current
+;;    a. If none, return :dead-end
+;;    b. if just one option, add it to front of path and recur.
+;;    c. if several possibilites, try each, one after the other.
+;;       keep the non-:dead-end alternatives.
+;;       if more than one, return the shortest
 ;;
-;; (horizontal-paths (board-make sample1))
-;; (({:from [1 1], :to [1 9]}) [] ({:from [3 1], :to [3 9]}))
-;; adventofcode1.twentyfour> (s/conform ::path (({:from [1 1], :to [1 9]}) [] ({:from [3 1], :to [3 9]})))
-;; ArityException Wrong number of args (0) passed to: PersistentArrayMap  clojure.lang.AFn.throwArity (AFn.java:429)
-;; adventofcode1.twentyfour> (s/conform (s/coll-of ::path) '(({:from [1 1], :to [1 9]}) [] ({:from [3 1], :to [3 9]})))
-;; :clojure.spec/invalid
-;; adventofcode1.twentyfour>
+;; optimizations:
+;; A. When looking for alternatives, only allow 2nd use of arc if we found a digit in between
+;; B. Send around an atom with the shortest COMPLETE path sofar, when looking for conituations, skip those that already are too long
+;;
+
+(s/def ::breadcrumb  (s/tuple int? int?))
+(s/def ::breadcrumbs (s/or :deadend #{:deadend} :success (s/coll-of ::breadcrumb)))
+;; ::digits cannot generate well! SOLVED!! set? in spec is a really bad idea if you want to generate.
+;; (gen/sample (s/gen ::digits)) => (#{} #{} #{} #{} #{} #{} #{} #{} #{} #{})
+;; this works nicely, (into #{} (first (gen/sample (s/gen (s/coll-of ::digit)) 1))) => #{\0 \1 \2 \4 \5 \6 \7 \8 \9}
+;; but is not a generator, and also, it is not minimuizable
+;; (s/def ::digits      (s/with-gen (s/and set? (s/every ::digit)) #(into #{} (first (gen/sample (s/gen (s/coll-of ::digit)) 1)))))
+;; (s/def ::digits      (s/and set? (s/every ::digit)))
+(s/def ::digits      (s/coll-of ::digit :into #{} ::max-count 30))
+(s/def ::puzzle      (s/keys :req-un [::all ::dp ::pd]))
+
+(s/fdef finished?
+        :args (s/cat :breadcrumbs ::breadcrumbs :digits ::digits :puzzle ::puzzle)
+        :ret  boolean?)
+
+(defn finished?
+  "We are finished if all digits have been found."
+  [breadcrumbs digits puzzle]
+  (= (count digits)(count (:dp puzzle))))
+
+(s/fdef path->breadcrump-alts
+        :args (s/cat :current ::from :paths (s/coll-of ::path))
+        :ret  (s/coll-of ::from))
+
+(defn path->breadcrump-alts
+  [current paths]
+  (map
+   (fn [{:keys [from to]}]
+     (if (= current from)
+       to
+       from))
+   paths))
+
+(s/fdef possibilites
+        :args (s/cat :breadcrumbs ::breadcrumbs :digits ::digits :puzzle ::puzzle)
+        :ret  ::breadcrumbs)
+
+(defn possibilities
+  "Find all possible next steps from current."
+  [breadcrumbs digits puzzle]
+  (let [current (first breadcrumbs)
+        p (-> puzzle :all (get current))
+        breadcrumb (path->breadcrump-alts current p)]
+    breadcrumb))
 
 
+
+(s/fdef circle?
+        :args (s/cat :breadcrumbs ::breadcrumbs :digits ::digits :puzzle ::puzzle)
+        :ret  boolean?)
+
+(defn circle?
+  "Abort looping by forbidden the same cell to visited more than 2 times."
+  [breadcrumbs digits puzzle]
+  (let [current (first breadcrumbs)]
+    (> (count (filter #(= % current) breadcrumbs))
+       2)))
+
+(s/fdef find-breadcrumbs
+        :args (s/alt
+               :base  (s/cat :puzzle ::puzzle)
+               :recur (s/cat :breadcrumbs ::breadcrumbs :digits ::digits :puzzle ::puzzle)))
+;; cannot check :ret since we return a tree
+;;        :ret  ::breadcrumbs
+
+(defn find-breadcrumbs
+  ([puzzle](find-breadcrumbs [(get (:dp puzzle) \0)] #{} puzzle))
+  ([breadcrumbs digits puzzle]
+   (let [[current & rest] breadcrumbs
+         digit (get (:pd puzzle) current)
+         digits2 (if digit (conj digits digit) digits)]
+     (if (finished? breadcrumbs digits2 puzzle)
+       {:result breadcrumbs}
+       (if (circle? breadcrumbs digits2 puzzle)
+         :deadend
+         (let [possibilities (possibilities breadcrumbs digits2 puzzle)]
+          (if (empty? possibilities)
+           :deadend
+           (let [res (map #(find-breadcrumbs (cons % breadcrumbs) digits2 puzzle) possibilities)]
+             res))))))))
+
+(defn print-res
+  [res]
+  (if (map? res)
+    (println (reverse (:result res)))
+    (if (= res :deadend)
+      nil
+      (doseq [x res] (print-res x)))))
+
+(defn solve-1
+  [puzzle]
+  (let [board (board-make puzzle)
+        all (all-paths board)
+        _ (println all)
+        numcells (numbered-cells board)
+        pd (pos-digit-map numcells)
+        dp (digit-pos-map numcells)
+        res (find-breadcrumbs {:all all :dp dp :pd pd})]
+    (print-res res)))
 
 (clojure.spec.test/instrument)
 
