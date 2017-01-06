@@ -87,6 +87,7 @@
 ;;([1 1] [1 3] [1 1] [1 3] [1 5] [1 9] [3 9] [3 7] [3 9] [5 9] [5 6] [5 5] [3 5] [3 3])
 ;;([1 1] [1 3] [1 1] [1 3] [1 5] [1 9] [1 5] [3 5] [3 3] [3 5] [5 5] [5 6] [5 9] [3 9] [3 7])
 
+
 (def sample3
   "###########
   #0.1.....2#
@@ -518,17 +519,22 @@
   (= (count digits)(count (:dp puzzle))))
 
 (s/fdef path->breadcrump-alts
-        :args (s/cat :current ::from :paths (s/coll-of ::path))
+        :args (s/cat  :breadcrumbs ::breadcrumbs :paths (s/coll-of ::path))
         :ret  (s/coll-of ::from))
 
 (defn path->breadcrump-alts
-  [current paths]
-  (map
-   (fn [{:keys [from to]}]
-     (if (= current from)
-       to
-       from))
-   paths))
+  [breadcrumbs paths]
+  (let [current (first breadcrumbs)
+        bread-ext
+        (map
+         (fn [{:keys [from to]}]
+           (let [next (if (= current from) to from)]
+             [next
+              ;; make the visited path be last
+              (not (mw.utils/in? breadcrumbs next))]))
+         paths)]
+    (map first (sort bread-ext))))
+
 
 (s/fdef possibilites
         :args (s/cat :breadcrumbs ::breadcrumbs :digits ::digits :puzzle ::puzzle)
@@ -539,8 +545,9 @@
   [breadcrumbs digits puzzle]
   (let [current (first breadcrumbs)
         p (-> puzzle :all (get current))
-        breadcrumb (path->breadcrump-alts current p)]
+        breadcrumb (path->breadcrump-alts breadcrumbs p)]
     breadcrumb))
+
 
 
 
