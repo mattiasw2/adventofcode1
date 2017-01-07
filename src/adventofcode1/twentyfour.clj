@@ -569,6 +569,14 @@
 ;; cannot check :ret since we return a tree
 ;;        :ret  ::breadcrumbs
 
+;; single threaded (map)
+;; adventofcode1.twentyfour> (mw.utils/timed "foo" (solve-1 sample3))
+;; "Timed: foo solve-1: 13.047683 msecs"
+;; nil
+;; adventofcode1.twentyfour> (mw.utils/timed "foo" (solve-1 puzzle-input-a))
+;; "Timed: foo solve-1: 26944.700927 msecs"
+;; nil
+
 (defn find-breadcrumbs
   ([puzzle](find-breadcrumbs [(get (:dp puzzle) \0)] #{} puzzle))
   ([breadcrumbs digits puzzle]
@@ -593,16 +601,25 @@
       nil
       (doseq [x res] (print-res x)))))
 
+(defn count-res
+  [res]
+  (if (map? res)
+    1
+    (if (= res :deadend)
+      0
+      (apply + (map count-res res)))))
+
 (defn solve-1
   [puzzle]
   (let [board (board-make puzzle)
         all (all-paths board)
-        _ (println all)
+        ;; _ (println all)
         numcells (numbered-cells board)
         pd (pos-digit-map numcells)
         dp (digit-pos-map numcells)
         res (find-breadcrumbs {:all all :dp dp :pd pd})]
-    (print-res res)))
+;;    (print-res res)
+    (count-res res)))
 
 (clojure.spec.test/instrument)
 
