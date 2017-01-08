@@ -560,12 +560,31 @@
   [breadcrumbs digits puzzle]
   (let [current (first breadcrumbs)]
     (> (count (filter #(= % current) breadcrumbs))
-       2)))
+       1)))
 
-(s/fdef find-breadcrumbs
-        :args (s/alt
-               :base  (s/cat :puzzle ::puzzle)
-               :recur (s/cat :breadcrumbs ::breadcrumbs :digits ::digits :puzzle ::puzzle)))
+
+(defn breadcrumps-length
+  "Naive implementation, just count the hops, but easier now for testing"
+  [breadcrumps]
+  ;; (reduce (constantly 1) breadcrumps)
+  (count breadcrumps))
+
+(defn control-make
+  "Factory for control atom."
+  [max-depth]
+  ;; assume we will find something shorter than 100 steps (for 10 digits).
+  (atom {:shortest (inc max-depth)}))
+
+(defn control-longer?
+  "Return true if `len` is already longer or equal than the shortest path found in `control`."
+  [control len]
+  (>= len (:shortest @control)))
+
+(defn control-set-shortest
+  "`len` is the new shortest path in `control`."
+  [control len]
+  (swap! control #(assoc % :shortest (min len (:shortest %)))))
+
 ;; cannot check :ret since we return a tree
 ;;        :ret  ::breadcrumbs
 
@@ -577,20 +596,32 @@
 ;; "Timed: foo solve-1: 26944.700927 msecs"
 ;; nil
 
+(defn atom?
+  [a]
+  (instance? clojure.lang.IAtom a))
+
+(s/fdef find-breadcrumbs
+        :args (s/alt
+               :base  (s/cat :puzzle ::puzzle :max-depth int?)
+               :recur (s/cat :breadcrumbs ::breadcrumbs :digits ::digits :control atom? :puzzle ::puzzle)))
+
 (defn find-breadcrumbs
-  ([puzzle](find-breadcrumbs [(get (:dp puzzle) \0)] #{} puzzle))
-  ([breadcrumbs digits puzzle]
+  ([puzzle max-depth](find-breadcrumbs [(get (:dp puzzle) \0)] #{} (control-make max-depth) puzzle))
+  ([breadcrumbs digits control puzzle]
    (let [[current & rest] breadcrumbs
          digit (get (:pd puzzle) current)
          digits2 (if digit (conj digits digit) digits)]
      (if (finished? breadcrumbs digits2 puzzle)
-       {:result breadcrumbs}
-       (if (circle? breadcrumbs digits2 puzzle)
+       (do
+         (control-set-shortest control (breadcrumps-length breadcrumbs))
+         {:result breadcrumbs})
+       (if (or (circle? breadcrumbs digits2 puzzle)
+               (control-longer? control (breadcrumps-length breadcrumbs)))
          :deadend
          (let [possibilities (possibilities breadcrumbs digits2 puzzle)]
           (if (empty? possibilities)
            :deadend
-           (let [res (map #(find-breadcrumbs (cons % breadcrumbs) digits2 puzzle) possibilities)]
+           (let [res (map #(find-breadcrumbs (cons % breadcrumbs) digits2 control puzzle) possibilities)]
              res))))))))
 
 (defn print-res
@@ -610,16 +641,20 @@
       (apply + (map count-res res)))))
 
 (defn solve-1
-  [puzzle]
+  [puzzle max-depth]
   (let [board (board-make puzzle)
         all (all-paths board)
         ;; _ (println all)
         numcells (numbered-cells board)
         pd (pos-digit-map numcells)
         dp (digit-pos-map numcells)
-        res (find-breadcrumbs {:all all :dp dp :pd pd})]
-;;    (print-res res)
+        res (find-breadcrumbs {:all all :dp dp :pd pd} max-depth)]
+    (print-res res)
     (count-res res)))
+
+(defn runit
+  []
+  (doseq [n (range 2 100)] (mw.utils/timed (str "puzzle: " n) (println (solve-1 puzzle-input-a n)))))
 
 (clojure.spec.test/instrument)
 
